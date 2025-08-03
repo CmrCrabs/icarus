@@ -1,15 +1,15 @@
 {config, pkgs, inputs, lib, ... }:
 let
-  wal =   "${dotfilesDir}/wallpapers/kanagawa_ocean.png";
-  wal-l = "${dotfilesDir}/wallpapers/kanagawa_ocean.png";
+  wal =   "${dotfilesDir}/wallpapers/sunset_water_rocks.png";
+  wal-l = "${dotfilesDir}/wallpapers/sunset_water_rocks.png";
   font = "Iosevka Nerd Font";
   #font = "Jetbrains Mono Nerd Font";
   header_font = "Jetbrains Mono Nerd Font";
   style = "dark";
-  rounding = "0";
+  rounding = "10";
   scheme = "neutral";
   bg-contrast = "0.4";
-  fg-contrast = "0.3";
+  fg-contrast = "0.2";
   transparency = "1.00";
   transparency_hex = "ff";
   outer_gap = "10";
@@ -37,6 +37,7 @@ in
     (import ./config/desktop/hyprlock.nix { inherit wal wal-l style rounding; })
     (import ./config/ags.nix { inherit config inputs pkgs rounding dotfilesDir; })
     (import ./config/nvim.nix { inherit config lib pkgs dotfilesDir; })
+    # (import ./config/apps/zathura.nix { inherit config lib pkgs; })
     #(import ./config/apps/aseprite.nix { inherit config lib pkgs dotfilesDir; })
     (import ./config/cli/fish.nix { inherit style pkgs; })
     (import ./config/apps/kitty.nix { inherit config outer_gap font; })
