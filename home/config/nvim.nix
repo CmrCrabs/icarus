@@ -1,19 +1,29 @@
-{ config, lib, pkgs, dotfilesDir, ...}:
 {
-    home.packages = with pkgs; [
-        lua-language-server
-        typescript-language-server
-        rust-analyzer
-        vimPlugins.omnisharp-extended-lsp-nvim
-        # tinymist
-    ];
+  config,
+  lib,
+  pkgs,
+  dotfilesDir,
+  ...
+}: {
+  home.packages = with pkgs; [
+    ## lsps
+    lua-language-server
+    typescript-language-server
+    rust-analyzer
+    vimPlugins.omnisharp-extended-lsp-nvim
+    nixd
+    # tinymist
 
-    xdg.configFile = {
-      nvim = {
-        source = 
-          config.lib.file.mkOutOfStoreSymlink
-          "${dotfilesDir}/nvim";
-        recursive = true;
-      };
+    ## formatters
+    alejandra
+  ];
+
+  xdg.configFile = {
+    nvim = {
+      source =
+        config.lib.file.mkOutOfStoreSymlink
+        "${dotfilesDir}/nvim";
+      recursive = true;
     };
+  };
 }

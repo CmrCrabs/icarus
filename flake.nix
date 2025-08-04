@@ -1,9 +1,9 @@
 {
-  description = "Flake initial test"; 
-  
+  description = "Flake initial test";
+
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.11";
-    nixos-unstable.url = "github:NixOS/nixpkgs/nixos-unstable"; 
+    nixos-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
     nur.url = "github:nix-community/NUR";
 
     home-manager.url = "github:nix-community/home-manager/release-24.11";
@@ -31,33 +31,41 @@
     # ags.url = "github:Aylur/ags";
   };
 
-  outputs = { self, nixpkgs, nixos-unstable, home-manager,nur, ... }@inputs:
-  let 
+  outputs = {
+    self,
+    nixpkgs,
+    nixos-unstable,
+    home-manager,
+    nur,
+    ...
+  } @ inputs: let
     lib = nixpkgs.lib;
     system = "x86_64-linux";
     pkgs = nixpkgs.legacyPackages.${system};
-    unstablePkgs = import nixos-unstable { inherit system; config.allowUnfree = true; };
-    in {
-
+    unstablePkgs = import nixos-unstable {
+      inherit system;
+      config.allowUnfree = true;
+    };
+  in {
     nixosConfigurations.zyn-nixos = lib.nixosSystem {
       inherit system;
-      modules = [ 
+      modules = [
         nur.modules.nixos.default
         ./nixos/configuration.nix
       ];
-      specialArgs = { inherit inputs unstablePkgs; };
+      specialArgs = {inherit inputs unstablePkgs;};
     };
 
     homeConfigurations.zyn = home-manager.lib.homeManagerConfiguration {
       inherit pkgs;
       modules = [
-          # hyprland.homeManagerModules.default
-          # {
-          #   wayland.windowManager.hyprland.enable = true;
-          # }
-        ./home/home.nix 
-      ]; 
-      extraSpecialArgs = { inherit inputs; };
+        # hyprland.homeManagerModules.default
+        # {
+        #   wayland.windowManager.hyprland.enable = true;
+        # }
+        ./home/home.nix
+      ];
+      extraSpecialArgs = {inherit inputs;};
     };
   };
 }

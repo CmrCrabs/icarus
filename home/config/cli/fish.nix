@@ -1,5 +1,8 @@
-{ pkgs, style, ... }:
-let
+{
+  pkgs,
+  style,
+  ...
+}: let
   abbr = {
     "v" = "vim";
     "ll" = "eza -l --icons --no-permissions --no-user --no-time --group-directories-first";
@@ -17,22 +20,22 @@ let
     "cpng" = "mogrify -format png *.jpg && rm *.jpg";
     "shell" = "nix-shell . --command \"fish\"";
     "rst" = "exit && cd && clear && colors";
-  }; 
+  };
   aliases = {
     "ls" = "eza --icons --no-permissions --no-user --no-time --group-directories-first";
     "bat" = "cat /sys/class/power_supply/BAT0/capacity";
   };
-  in {
+in {
   programs.fish = {
     enable = true;
     shellAbbrs = abbr;
     shellAliases = aliases;
     interactiveShellInit = ''
-      starship init fish | source 
+      starship init fish | source
     '';
     shellInit = ''
-    set -g fish_greeting
-    colors
+      set -g fish_greeting
+      colors
 
     '';
   };

@@ -4,12 +4,12 @@
 
     [editor.file-picker]
     hidden = false
-    
+
     [editor.cursor-shape]
     insert = "bar"
     normal = "block"
     select = "underline"
-    
+
     [editor]
     auto-save = true
     auto-completion = true

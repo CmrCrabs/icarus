@@ -1,15 +1,17 @@
-{ config, lib, pkgs, ...}:
 {
-
+  config,
+  lib,
+  pkgs,
+  ...
+}: {
   xdg.configFile."zathura/zathurarc".text = ''
-set recolor-lightcolor "rgba(0, 0, 0, 0)"
-set recolor-darkcolor "rgba(255, 255, 255, 1)"
-map i recolor
-set recolor true
-set adjust-open "best"
-set guioptions none
-map j feedkeys "<C-Down>"
-map k feedkeys "<C-Up>"
+    set recolor-lightcolor "rgba(0, 0, 0, 0)"
+    set recolor-darkcolor "rgba(255, 255, 255, 1)"
+    map i recolor
+    set recolor true
+    set adjust-open "best"
+    set guioptions none
+    map j feedkeys "<C-Down>"
+    map k feedkeys "<C-Up>"
   '';
 }
-

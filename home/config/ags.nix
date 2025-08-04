@@ -1,6 +1,12 @@
-{ config, inputs, pkgs, rounding, dotfilesDir, ... }:
 {
-  imports = [ inputs.ags.homeManagerModules.default ];
+  config,
+  inputs,
+  pkgs,
+  rounding,
+  dotfilesDir,
+  ...
+}: {
+  imports = [inputs.ags.homeManagerModules.default];
 
   programs.ags = {
     enable = false;

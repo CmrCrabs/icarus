@@ -1,6 +1,11 @@
-{config, pkgs, inputs, lib, ... }:
-let
-  wal =   "${dotfilesDir}/wallpapers/sunset_water_rocks.png";
+{
+  config,
+  pkgs,
+  inputs,
+  lib,
+  ...
+}: let
+  wal = "${dotfilesDir}/wallpapers/sunset_water_rocks.png";
   wal-l = "${dotfilesDir}/wallpapers/sunset_water_rocks.png";
   font = "Iosevka Nerd Font";
   #font = "Jetbrains Mono Nerd Font";
@@ -17,8 +22,7 @@ let
   dotfilesDir = "${config.home.homeDirectory}/limitless";
   obsidianDir = "${config.home.homeDirectory}/Obsidian";
   templateDir = "${dotfilesDir}/home/templates";
-in
-{
+in {
   programs.home-manager.enable = true;
   home.stateVersion = "24.11";
   nixpkgs.config.allowUnfree = true;
@@ -32,17 +36,17 @@ in
     inputs.nix-colors.homeManagerModules.default
 
     # Files (w/ Inputs)
-    (import ./matugen.nix { inherit wal style rounding transparency outer_gap font header_font transparency_hex config templateDir obsidianDir; })
-    (import ./config/desktop/hyprland.nix { inherit config inputs pkgs; })
-    (import ./config/desktop/hyprlock.nix { inherit wal wal-l style rounding; })
-    (import ./config/ags.nix { inherit config inputs pkgs rounding dotfilesDir; })
-    (import ./config/nvim.nix { inherit config lib pkgs dotfilesDir; })
+    (import ./matugen.nix {inherit wal style rounding transparency outer_gap font header_font transparency_hex config templateDir obsidianDir;})
+    (import ./config/desktop/hyprland.nix {inherit config inputs pkgs;})
+    (import ./config/desktop/hyprlock.nix {inherit wal wal-l style rounding;})
+    (import ./config/ags.nix {inherit config inputs pkgs rounding dotfilesDir;})
+    (import ./config/nvim.nix {inherit config lib pkgs dotfilesDir;})
     # (import ./config/apps/zathura.nix { inherit config lib pkgs; })
     #(import ./config/apps/aseprite.nix { inherit config lib pkgs dotfilesDir; })
-    (import ./config/cli/fish.nix { inherit style pkgs; })
-    (import ./config/apps/kitty.nix { inherit config outer_gap font; })
+    (import ./config/cli/fish.nix {inherit style pkgs;})
+    (import ./config/apps/kitty.nix {inherit config outer_gap font;})
 
-    # Files 
+    # Files
     ./config/desktop/hypridle.nix
     ./config/cli/git.nix
     ./config/cli/helix.nix
@@ -54,26 +58,25 @@ in
     ./templates/kitty_wal_template.nix
     ./templates/ags_wal_template.nix
     ./templates/gtk_wal_template.nix
-
   ];
 
-  systemd.user.startServices ="sd-switch";
+  systemd.user.startServices = "sd-switch";
 
   home.packages = [
-    (import ../scripts/theme.nix { inherit config inputs pkgs wal wal-l style rounding scheme bg-contrast fg-contrast dotfilesDir; })
-    (import ../scripts/color_script.nix { inherit pkgs; })
+    (import ../scripts/theme.nix {inherit config inputs pkgs wal wal-l style rounding scheme bg-contrast fg-contrast dotfilesDir;})
+    (import ../scripts/color_script.nix {inherit pkgs;})
   ];
 
   # NUR
 
   home.file."nix/config.nix".text = ''
-  {
-    nixpkgs.config.packageOverrides = pkgs: {
-      nur = import (builtins.fetchTarball "https://github.com/nix-community/NUR/archive/master.tar.gz") {
-        inherit pkgs;
+    {
+      nixpkgs.config.packageOverrides = pkgs: {
+        nur = import (builtins.fetchTarball "https://github.com/nix-community/NUR/archive/master.tar.gz") {
+          inherit pkgs;
+        };
       };
-    };
-  }
+    }
 
   '';
 
@@ -91,7 +94,7 @@ in
     HYPRCURSOR_SIZE = "24";
     CMAKE_MAKE_PROGRAM = "${pkgs.cmake}";
     TEST = "real";
-    ADW_DISABLE_PORTAL="1";
+    ADW_DISABLE_PORTAL = "1";
     # KRITA_NO_STYLE_OVERRIDE=1;
 
     XDG_SESSION_TYPE = "wayland";

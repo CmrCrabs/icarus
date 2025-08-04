@@ -1,5 +1,9 @@
-{ config, inputs, pkgs, ...}:
 {
+  config,
+  inputs,
+  pkgs,
+  ...
+}: {
   xdg.portal = {
     enable = true;
     extraPortals = [
@@ -16,7 +20,7 @@
     systemd.enable = true;
     xwayland.enable = true;
     # package = inputs.hyprland.packages."${pkgs.system}".hyprland;
-    
+
     plugins = [
       # inputs.hyprland-plugins.packages.${pkgs.system}.hyprbars
       # inputs.hyprland-plugins.packages."${pkgs.system}".borders-plus-plus
@@ -42,7 +46,7 @@
 
       exec-once = [
         "swww init &"
-        # "sudo tlp start" 
+        # "sudo tlp start"
         "hypridle"
         "ags"
         "wlsunset -l 52.2 -L 0.13"
@@ -71,12 +75,12 @@
         # "3, persistent:true"
         # "4, persistent:true"
       ];
-      
-      general = { 
+
+      general = {
         layout = "dwindle";
         resize_on_border = "yes";
       };
-      
+
       misc = {
         disable_hyprland_logo = "yes";
         disable_splash_rendering = "yes";
@@ -84,7 +88,7 @@
         animate_manual_resizes = "yes";
         vfr = "yes";
       };
-      
+
       input = {
         kb_layout = "gb";
         touchpad = {
@@ -99,7 +103,7 @@
         workspace_swipe = "yes";
         workspace_swipe_fingers = "3";
       };
-    
+
       decoration = {
         shadow = {
           enabled = "yes";
@@ -117,13 +121,13 @@
           new_optimizations = "on";
 
           ignore_opacity = "yes";
-          
+
           noise = "0.0117";
           contrast = "1.0";
           brightness = "1.0";
         };
       };
-      
+
       animations = {
         enabled = "yes";
         bezier = [
@@ -146,7 +150,7 @@
           "workspaces, 1, 2, menu_decel, slide"
         ];
       };
-      
+
       layerrule = [
         "noanim, ^(slurp)$"
         "noanim, selection"
@@ -182,7 +186,7 @@
         "bordersize 0, class:^(kitty)$"
         # "nofullscreenrequest, class:firefox), title:(Picture-in-Picture)"
         "float, class:(firefox), title:(Picture-in-Picture)"
-        "pin, class:(firefox), title:(Picture-in-Picture)" 
+        "pin, class:(firefox), title:(Picture-in-Picture)"
       ];
       windowrule = [
         "size 1230 960,^(kitty)$"
@@ -215,17 +219,17 @@
         "$mainMod, L, movefocus, r"
         "$mainMod, K, movefocus, u"
         "$mainMod, J, movefocus, d"
-        
+
         "$mainMod, H, bringactivetotop"
         "$mainMod, L, bringactivetotop"
         "$mainMod, K, bringactivetotop"
         "$mainMod, J, bringactivetotop"
         "ALT, Tab, cyclenext"
         "SHIFT ALT, Tab, cyclenext, prev"
-        
+
         "ALT, Tab, bringactivetotop"
         "SHIFT ALT, Tab, bringactivetotop"
-        
+
         "$mainMod, 1, workspace, 1"
         "$mainMod, 2, workspace, 2"
         "$mainMod, 3, workspace, 3"
@@ -237,7 +241,7 @@
         "$mainMod, 9, workspace, 9"
         "$mainMod, 0, workspace, 10"
         "$mainMod, -, workspace, 11"
-        
+
         "$mainMod SHIFT, 1, movetoworkspace, 1"
         "$mainMod SHIFT, 2, movetoworkspace, 2"
         "$mainMod SHIFT, 3, movetoworkspace, 3"
@@ -249,46 +253,45 @@
         "$mainMod SHIFT, 9, movetoworkspace, 9"
         "$mainMod SHIFT, 0, movetoworkspace, 10"
         "$mainMod SHIFT, -, movetoworkspace, 11"
-        
+
         "$mainMod SHIFT, H, movewindow, l"
         "$mainMod SHIFT, L, movewindow, r"
         "$mainMod SHIFT, K, movewindow, u"
         "$mainMod SHIFT, J, movewindow, d"
-        
+
         ",XF86AudioRaiseVolume,exec,pamixer -i 5"
         ",XF86AudioLowerVolume,exec,pamixer -d 5"
         ",XF86AudioMute,exec,pamixer -t"
-        
+
         ",XF86MonBrightnessUp,exec,brightnessctl s 5%+"
         ",XF86MonBrightnessDown,exec,brightnessctl s 5%-"
-
       ];
     };
     extraConfig = ''
-    decoration {
-      rounding = $rounding
-    }
-    monitor = $screen1, addreserved, $outer_gap, $outer_gap, $outer_gap, $outer_gap
-    monitor = $screen2, addreserved, $outer_gap, $outer_gap, $outer_gap, $outer_gap
-    general {
-      gaps_in = $outer_gap
-      gaps_out = 0
-      border_size = 10
-      col.active_border = $background_border;
-      col.inactive_border = $background_border;
-    }
+      decoration {
+        rounding = $rounding
+      }
+      monitor = $screen1, addreserved, $outer_gap, $outer_gap, $outer_gap, $outer_gap
+      monitor = $screen2, addreserved, $outer_gap, $outer_gap, $outer_gap, $outer_gap
+      general {
+        gaps_in = $outer_gap
+        gaps_out = 0
+        border_size = 10
+        col.active_border = $background_border;
+        col.inactive_border = $background_border;
+      }
 
-    plugin {
-        hyprbars {
-            # example config
-            bar_height = 20
+      plugin {
+          hyprbars {
+              # example config
+              bar_height = 20
 
-            # example buttons (R -> L)
-            # hyprbars-button = color, size, on-click
-            hyprbars-button = rgb(ff4040), 10, 󰖭, hyprctl dispatch killactive
-            hyprbars-button = rgb(eeee11), 10, , hyprctl dispatch fullscreen 1
-        }
-    }
+              # example buttons (R -> L)
+              # hyprbars-button = color, size, on-click
+              hyprbars-button = rgb(ff4040), 10, 󰖭, hyprctl dispatch killactive
+              hyprbars-button = rgb(eeee11), 10, , hyprctl dispatch fullscreen 1
+          }
+      }
     '';
   };
 }

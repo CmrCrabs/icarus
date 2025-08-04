@@ -1,9 +1,11 @@
-{ pkgs, config, ...}:
-let
+{
+  pkgs,
+  config,
+  ...
+}: let
   email = "zayaanazam1234@hotmail.com";
   name = "CmrCrabs";
-in
-{
+in {
   programs.git = {
     enable = true;
     userEmail = email;

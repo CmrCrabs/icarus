@@ -1,13 +1,18 @@
-{ config, pkgs, unstablePkgs, inputs, ... }:
-let
+{
+  config,
+  pkgs,
+  unstablePkgs,
+  inputs,
+  ...
+}: let
   system = "x86_64-linux";
   asus-wmi-screenpad = config.boot.kernelPackages.callPackage ../derivs/asus-wmi-screenpad.nix {};
-in { 
+in {
   imports = [
-    ./hardware-configuration.nix 
+    ./hardware-configuration.nix
   ];
 
-  # misc gaming 
+  # misc gaming
 
   hardware.graphics = {
     enable = true;
@@ -17,11 +22,10 @@ in {
   programs.steam.gamescopeSession.enable = true;
   programs.gamemode.enable = true;
 
-
   # Bootloader.
   boot.loader = {
     systemd-boot.enable = false;
-    grub = { 
+    grub = {
       enable = true;
       efiSupport = true;
       useOSProber = true;
@@ -34,7 +38,7 @@ in {
     };
   };
 
-  networking = { 
+  networking = {
     hostName = "zyn-nixos";
     networkmanager.enable = true;
   };
@@ -42,7 +46,7 @@ in {
   time.timeZone = "Europe/London";
   i18n.defaultLocale = "en_GB.UTF-8";
 
-  i18n.extraLocaleSettings = { 
+  i18n.extraLocaleSettings = {
     LC_ADDRESS = "en_GB.UTF-8";
     LC_IDENTIFICATION = "en_GB.UTF-8";
     LC_MEASUREMENT = "en_GB.UTF-8";
@@ -50,12 +54,12 @@ in {
     LC_NAME = "en_GB.UTF-8";
     LC_NUMERIC = "en_GB.UTF-8";
     LC_PAPER = "en_GB.UTF-8";
-    LC_TELEPHONE = "en_GB.UTF-8"; 
+    LC_TELEPHONE = "en_GB.UTF-8";
     LC_TIME = "en_GB.UTF-8";
   };
 
-  nix.settings = { 
-    experimental-features = [ "nix-command" "flakes"];
+  nix.settings = {
+    experimental-features = ["nix-command" "flakes"];
     auto-optimise-store = true;
     substituters = [
       "https://hyprland.cachix.org"
@@ -78,7 +82,7 @@ in {
     enable = true;
     package = inputs.hyprland.packages."${pkgs.system}".hyprland;
   };
-  
+
   # xdg = {
   #   autostart.enable = true;
   #   portal = {
@@ -116,15 +120,15 @@ in {
   programs.nix-ld.enable = true;
 
   # Sound
-  # hardware.pulseaudio.extraConfig = "load-module module-combine-sink"; 
-  # sound.enable = true; 
-  # hardware.pulseaudio.enable = true; 
+  # hardware.pulseaudio.extraConfig = "load-module module-combine-sink";
+  # sound.enable = true;
+  # hardware.pulseaudio.enable = true;
 
-  security.rtkit.enable = true; 
+  security.rtkit.enable = true;
   services.pipewire = {
-    enable = true; 
-    alsa.enable = true; 
-    alsa.support32Bit = true; 
+    enable = true;
+    alsa.enable = true;
+    alsa.support32Bit = true;
     pulse.enable = true;
     #media-session.enable = true;
   };
@@ -136,30 +140,30 @@ in {
   '';
 
   # users
-  users.users.zyn = { 
-   isNormalUser = true; 
-   description = "zyn user acc"; 
-   extraGroups = [ "networkmanager" "wheel" "audio" ]; 
-   packages = with pkgs; [];
+  users.users.zyn = {
+    isNormalUser = true;
+    description = "zyn user acc";
+    extraGroups = ["networkmanager" "wheel" "audio"];
+    packages = with pkgs; [];
   };
 
   # visual
   fonts.packages = with pkgs; [
-    (nerdfonts.override { fonts = [ "JetBrainsMono" "Iosevka" ]; })
+    (nerdfonts.override {fonts = ["JetBrainsMono" "Iosevka"];})
     eb-garamond
   ];
 
   fonts.fontconfig = {
     defaultFonts = {
-      sansSerif = [ "Jetbrains Mono Nerd Font" ];
-      monospace = [ "Jetbrains Mono Nerd Font" ]; 
+      sansSerif = ["Jetbrains Mono Nerd Font"];
+      monospace = ["Jetbrains Mono Nerd Font"];
     };
   };
 
   programs.bash.shellAliases = {
     h = "Hyprland";
   };
-  
+
   # pkgs
 
   #boot.extraModulePackages = with config.boot.kernelPackages; [
@@ -209,7 +213,7 @@ in {
     mangohud
     protonup
     wine
-    
+
     # Term
     vim
     scc
@@ -249,7 +253,7 @@ in {
     cmake
     gnumake
     ninja
-    
+
     libdbusmenu-gtk3
 
     playerctl
@@ -262,7 +266,7 @@ in {
 
     yarn
     nodePackages.npm
-    
+
     dotnet-sdk_8
     dotnet-sdk
     mono
@@ -309,7 +313,6 @@ in {
     bluez
 
     p4
-
 
     # WGPU
     vulkan-loader

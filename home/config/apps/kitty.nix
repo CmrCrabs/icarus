@@ -1,5 +1,9 @@
-{ config, outer_gap, font, ... }:
 {
+  config,
+  outer_gap,
+  font,
+  ...
+}: {
   programs.kitty = {
     enable = true;
     settings = {
@@ -32,7 +36,7 @@
       resize_in_steps no
       shell fish
       dynamic_background_opacity yes
-      
+
       include ~/.config/kitty/bg_colors.conf
       include ~/.cache/wal/fg_colors.conf
     '';

@@ -1,5 +1,17 @@
-{ config, wal, style, rounding, transparency, transparency_hex, outer_gap, font, header_font, templateDir, obsidianDir, ... }:
 {
+  config,
+  wal,
+  style,
+  rounding,
+  transparency,
+  transparency_hex,
+  outer_gap,
+  font,
+  header_font,
+  templateDir,
+  obsidianDir,
+  ...
+}: {
   xdg.configFile."matugen/config.toml".text = ''
     [config]
     jsonFormat = 'hex'
@@ -43,5 +55,4 @@
     input_path = "${templateDir}/bg_colors.scss"
     output_path = "${config.home.homeDirectory}/.config/ags/scss/bg_colors.scss"
   '';
-
 }
