@@ -16,6 +16,7 @@
 
     ## formatters
     alejandra
+    stylua
   ];
 
   xdg.configFile = {

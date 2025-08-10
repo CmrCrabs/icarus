@@ -178,11 +178,12 @@ in {
     inputs.hypridle.packages.${system}.default
     inputs.ags.packages.${system}.default
     inputs.mcmojave-hyprcursor.packages.${system}.default
+    inputs.nvim-nightly.packages.${system}.default
 
     # NUR
     # config.nur.repos.nltch.spotify-adblock
     spotify
-    unstablePkgs.neovim
+    # unstablePkgs.neovim
     unstablePkgs.tinymist
 
     # Apps

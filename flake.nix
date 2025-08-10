@@ -28,6 +28,8 @@
     mcmojave-hyprcursor.url = "github:libadoxon/mcmojave-hyprcursor";
 
     ags.url = "github:Aylur/ags/v1";
+
+    nvim-nightly.url = "github:nix-community/neovim-nightly-overlay";
     # ags.url = "github:Aylur/ags";
   };
 
