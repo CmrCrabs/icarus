@@ -26,7 +26,7 @@
 
         mkNvim = import ./overlays/nvim-package.nix {inherit pkgs self nightly-neovim;};
       in {
-        packages.nvim = mkNvim {inherit pkgs system;};
+        packages.nvim = mkNvim;
       }
     )
     // {

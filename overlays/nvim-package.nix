@@ -3,7 +3,7 @@
 let
   tempDir = pkgs.runCommand "initFolder" {} ''
     mkdir -p $out
-    cp -r ${self}/config/nvim $out/
+    cp -r ${../config/nvim} $out/nvim
   '';
 in
 pkgs.writeShellApplication {
