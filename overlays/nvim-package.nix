@@ -1,14 +1,7 @@
 { pkgs, self, nightly-neovim, ... }:
 
 let
-  tempDir = pkgs.runCommand "initFolder" {} ''
-    mkdir -p $out
-    cp -r ${../config/nvim} $out/nvim
-  '';
-in
-pkgs.writeShellApplication {
-  name = "nvim";
-  runtimeInputs = with pkgs; [
+  deps = with pkgs; [
     ## lsps
     lua-language-server
     typescript-language-server
@@ -16,13 +9,23 @@ pkgs.writeShellApplication {
     vimPlugins.omnisharp-extended-lsp-nvim
     nixd
     tinymist
-		nightly-neovim
 
     ## formatters
     alejandra
     stylua
   ];
-  text = ''
-    nvim -u ${tempDir}/nvim/init.lua
+
+  tempDir = pkgs.runCommand "iniFolder" {} ''
+    mkdir -p $out
+    cp -r ${../config/nvim} $out/nvim
   '';
+  
+  nvimWrapper = pkgs.writeShellScriptBin "nvim" ''
+    exec ${nightly-neovim}/bin/nvim -u ${tempDir}/nvim/init.lua "$@"
+  '';
+in
+
+pkgs.buildEnv {
+  name = "nvim";
+  paths = deps ++ [ nvimWrapper ];
 }

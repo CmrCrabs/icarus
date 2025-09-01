@@ -5,10 +5,11 @@
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
 
-    neovim-nightly.url = "github:nix-community/neovim-nightly-overlay";
-
     nix-darwin.url = "github:nix-darwin/nix-darwin/master";
     nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
+
+    neovim-nightly.url = "github:nix-community/neovim-nightly-overlay";
+
   };
 
   outputs = {
