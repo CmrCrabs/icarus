@@ -159,6 +159,26 @@
         "type": "github"
       }
     },
+    "home-manager": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1756734952,
+        "narHash": "sha256-H6jmduj4QIncLPAPODPSG/8ry9lpr1kRq6fYytU52qU=",
+        "owner": "nix-community",
+        "repo": "home-manager",
+        "rev": "29ab63bbb3d9eee4a491f7ce701b189becd34068",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-community",
+        "repo": "home-manager",
+        "type": "github"
+      }
+    },
     "neovim-nightly": {
       "inputs": {
         "flake-compat": "flake-compat",
@@ -255,6 +275,7 @@
     "root": {
       "inputs": {
         "flake-utils": "flake-utils",
+        "home-manager": "home-manager",
         "neovim-nightly": "neovim-nightly",
         "nix-darwin": "nix-darwin",
         "nixpkgs": "nixpkgs_2"

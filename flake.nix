@@ -5,6 +5,9 @@
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
 
+    home-manager.url = "github:nix-community/home-manager";
+    home-manager.inputs.nixpkgs.follows = "nixpkgs";
+
     nix-darwin.url = "github:nix-darwin/nix-darwin/master";
     nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
 
@@ -36,7 +39,18 @@
     // {
       darwinConfigurations."osx" = inputs.nix-darwin.lib.darwinSystem {
         system = "aarch64-darwin";
-        modules = [ ./hosts/osx/configuration.nix ];
+        modules = [ 
+          ./hosts/osx/configuration.nix
+          inputs.home-manager.darwinModules.home-manager
+          {
+            home-manager = {
+              useGlobalPkgs = true;
+              useUserPackages = true;
+              extraSpecialArgs = {inherit inputs;};
+              users.zayaanazam = import ./hosts/osx/home.nix;
+            };
+          }
+        ];
         specialArgs = { inherit inputs; };
       };
     };
