@@ -17,7 +17,7 @@ let
 
   tempDir = pkgs.runCommand "iniFolder" {} ''
     mkdir -p $out
-    cp -r ${../config/nvim} $out/nvim
+    cp -r ${../modules/dev/nvim} $out/nvim
   '';
   
   nvimWrapper = pkgs.writeShellScriptBin "nvim" ''

@@ -3,7 +3,6 @@
 }:
 {
   imports = [
-    ./../../modules/system
   ];
 
   users.users.zayaanazam = {

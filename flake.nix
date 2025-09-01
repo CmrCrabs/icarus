@@ -10,6 +10,7 @@
 
     nix-darwin.url = "github:nix-darwin/nix-darwin/master";
     nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
+    mac-app-util.url = "github:hraban/mac-app-util";
 
     neovim-nightly.url = "github:nix-community/neovim-nightly-overlay";
 
@@ -41,6 +42,7 @@
         system = "aarch64-darwin";
         modules = [ 
           ./hosts/osx/configuration.nix
+          inputs.mac-app-util.darwinModules.default
           inputs.home-manager.darwinModules.home-manager
           {
             home-manager = {
@@ -48,6 +50,9 @@
               useUserPackages = true;
               extraSpecialArgs = {inherit inputs;};
               users.zayaanazam = import ./hosts/osx/home.nix;
+              sharedModules = [
+                inputs.mac-app-util.homeManagerModules.default
+              ];
             };
           }
         ];

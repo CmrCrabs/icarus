@@ -1,9 +1,8 @@
 { config, pkgs, ... }:
 {
   imports = [
-    ./../../home/git.nix
+    ./../../modules/dev
   ];
-  git.enable = true;
 
   home.username = "zayaanazam";
   home.stateVersion = "25.05";

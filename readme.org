@@ -1,3 +1,6 @@
 + complete rewrite to be less slop, just slop
 + see [[https://github.com/CmrCrabs/icarus/tree/limitless][limitless]] for old flake
 + or [[https://github.com/CmrCrabs/dotfiles][dotfiles]] for very old flake(s)
+
+
+modules/* are all home-manager, with the exception of modules/system

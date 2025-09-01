@@ -1,12 +1,14 @@
-{inputs, pkgs, lib, config, ... }:
+{ pkgs, lib, config, ... }:
 {
   options.ghostty.enable = lib.mkEnableOption "enables ghostty";
 
   config = lib.mkIf config.ghostty.enable {
-    environment.systemPackages = [
+    home.packages = [
       (if pkgs.stdenv.hostPlatform.isDarwin
        then pkgs.ghostty-bin
        else pkgs.ghostty)
     ];
+
+
   };
 }
