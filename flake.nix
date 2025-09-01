@@ -6,6 +6,9 @@
     flake-utils.url = "github:numtide/flake-utils";
 
     neovim-nightly.url = "github:nix-community/neovim-nightly-overlay";
+
+    nix-darwin.url = "github:nix-darwin/nix-darwin/master";
+    nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs = {
@@ -30,6 +33,10 @@
       }
     )
     // {
-
+      darwinConfigurations."osx" = inputs.nix-darwin.lib.darwinSystem {
+        system = "aarch64-darwin";
+        modules = [ ./hosts/osx/configuration.nix ];
+        specialArgs = { inherit inputs; };
+      };
     };
 }
