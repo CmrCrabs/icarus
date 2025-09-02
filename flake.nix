@@ -35,6 +35,7 @@
         mkNvim = import ./overlays/nvim-package.nix {inherit pkgs self nightly-neovim;};
       in {
         packages.nvim = mkNvim;
+        packages.iosevka = pkgs.iosevka;
       }
     )
     // {

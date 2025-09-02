@@ -1,0 +1,67 @@
+[buildPlans.IosevkaIcarus]
+family = "Iosevka-Icarus"
+spacing = "normal"
+serifs = "slab"
+noCvSs = false
+exportGlyphNames = true
+
+[buildPlans.IosevkaIcarus.variants.design]
+one = "base-flat-top-serif"
+two = "curly-neck-serifed"
+three = "flat-top-serifed"
+four = "open-serifed"
+five = "upright-flat-serifed"
+six = "closed-contour"
+seven = "straight-serifed-crossbar"
+eight = "two-circles"
+nine = "closed-contour"
+zero = "slashed"
+capital-a = "straight-tri-serifed"
+capital-c = "unilateral-serifed"
+capital-d = "standard-bilateral-serifed"
+capital-e = "serifed-capped"
+capital-g = "toothed-serifed-capped"
+capital-j = "serifed"
+capital-k = "straight-serifed"
+a = "single-storey-double-serifed"
+c = "unilateral-serifed"
+f = "flat-hook-tailed"
+m = "top-left-and-bottom-right-serifed"
+t = "bent-hook"
+x = "straight-serifed"
+k = "straight-full-serifed"
+z = "straight-serifed"
+tilde = "low"
+brace = "curly"
+ampersand = "lower-open"
+percent = "rings-segmented-slash"
+question = "corner-flat-hooked"
+decorative-angle-brackets = "middle"
+lig-ltgteq = "flat"
+
+[buildPlans.IosevkaIcarus.variants.italic]
+capital-c = "unilateral-serifed"
+c = "unilateral-serifed"
+k = "straight-full-serifed"
+
+[buildPlans.IosevkaIcarus.weights.Regular]
+shape = 400
+menu = 400
+css = 400
+
+[buildPlans.IosevkaIcarus.weights.Bold]
+shape = 700
+menu = 700
+css = 700
+
+[buildPlans.IosevkaIcarus.slopes.Upright]
+angle = 0
+shape = "upright"
+menu = "upright"
+css = "normal"
+
+[buildPlans.IosevkaIcarus.slopes.Italic]
+angle = 9.4
+shape = "italic"
+menu = "italic"
+css = "italic"
