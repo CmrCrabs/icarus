@@ -6,6 +6,7 @@
 {
   imports = [
     ./../../modules/nix/fonts.nix
+    ./../../modules/nix/homebrew.nix
   ];
 
   users.users.zayaanazam = {
@@ -16,20 +17,13 @@
   nix.settings.experimental-features = "nix-command flakes";
   nixpkgs.hostPlatform = "aarch64-darwin";
   system.stateVersion = 6;
+  nixpkgs.config.allowUnfree = true;
 
 
   security.pam.services.sudo_local.touchIdAuth = true;
 
   # fix path issues
   programs.fish.enable = true;
-
-  # environment.variables = [
-  #   EDITOR = "nvim";
-  #   SHELL = "fish";
-  #   TERMINAL = "ghostty";
-  #   BROWSER = "firefox";
-  # ];
-
 
   # mac settings
   system.activationScripts.extraActivation.text = ''
@@ -52,7 +46,7 @@
       dock = {
         autohide = true;
         autohide-delay = 0.12;
-        autohide-time-modifier = 2.0;
+        autohide-time-modifier = 0.75;
         mru-spaces = false;
         show-recents = false;
         tilesize = 24;
@@ -80,7 +74,7 @@
         AppleMeasurementUnits = "Centimeters";
         AppleMetricUnits = 1;
         AppleScrollerPagingBehavior = true;
-        AppleShowAllExtensions = true;
+        AppleShowAllExtensions = false;
         AppleTemperatureUnit = "Celsius";
         NSTableViewDefaultSizeMode = 1;
       };

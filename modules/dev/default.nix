@@ -6,6 +6,7 @@
     ./nvim
     ./fish
     ./starship
+    ./aerospace
   ];
 
   config.ghostty.enable = lib.mkDefault true;
@@ -13,5 +14,6 @@
   config.nvim.enable = lib.mkDefault true;
   config.fish.enable = lib.mkDefault true;
   config.starship.enable = lib.mkDefault true;
+  config.aerospace.enable = lib.mkDefault true;
 }
 

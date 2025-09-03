@@ -23,6 +23,7 @@ in {
     home.packages = [
       pkgs.eza
       pkgs.fastfetch
+      pkgs.yazi
     ];
 
     programs.fish = {
@@ -33,7 +34,6 @@ in {
         starship init fish | source
       '';
       shellInit = ''
-        /opt/homebrew/bin/brew shellenv | source
         set -g fish_greeting
         colors
       '';

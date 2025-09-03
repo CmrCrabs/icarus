@@ -11,6 +11,15 @@
     nix-darwin.url = "github:nix-darwin/nix-darwin/master";
     nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
     mac-app-util.url = "github:hraban/mac-app-util";
+    nix-homebrew.url = "github:zhaofengli/nix-homebrew";
+    homebrew-core = {
+      url = "github:homebrew/homebrew-core";
+      flake = false;
+    };
+    homebrew-cask = {
+      url = "github:homebrew/homebrew-cask";
+      flake = false;
+    };
 
     neovim-nightly.url = "github:nix-community/neovim-nightly-overlay";
 
@@ -56,6 +65,7 @@
               ];
             };
           }
+          inputs.nix-homebrew.darwinModules.nix-homebrew
         ];
         specialArgs = { inherit inputs; };
       };
