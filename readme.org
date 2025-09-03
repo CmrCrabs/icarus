@@ -3,11 +3,11 @@
 + or [[https://github.com/CmrCrabs/dotfiles][dotfiles]] for very old flake(s)
 
 *** install
-```sh
 $ sh <(curl --proto '\=https' --tlsv1.2 -L https://nixos.org/nix/install)
+
 $ sudo nix run --extra-experimental-features "nix-command flakes" nix-darwin/master#darwin-rebuild -- switch
+
 $ sudo nix run nix-darwin --extra-experimental-features "nix-command flakes" -- switch --flake .#osx
-```
 
 *** outputs:
 **** system configs:
