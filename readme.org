@@ -2,5 +2,16 @@
 + see [[https://github.com/CmrCrabs/icarus/tree/limitless][limitless]] for old flake
 + or [[https://github.com/CmrCrabs/dotfiles][dotfiles]] for very old flake(s)
 
+### install
+$ sh <(curl --proto '\=https' --tlsv1.2 -L https://nixos.org/nix/install)
+$ sudo nix run --extra-experimental-features "nix-command flakes" nix-darwin/master#darwin-rebuild -- switch
+$ sudo nix run nix-darwin --extra-experimental-features "nix-command flakes" -- switch --flake .#osx
 
-modules/* are all home-manager, with the exception of modules/system
+### outputs:
+#### system configs:
+macos:
+- nix run github:cmrcrabs/icarus#osx 
+
+#### packages:
+neovim config:
+- nix run github:cmrcrabs/icarus#nvim 
