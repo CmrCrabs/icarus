@@ -3,10 +3,9 @@
   config,
   ...
 }: let
-  os = icon: fg: "[${icon} ](fg:${fg})";
   pad = {
-    left = "";
-    right = "";
+    left = "░▒▓";
+    right = "▓▒░";
   };
 in {
   options.starship.enable = lib.mkEnableOption "enables starship";
@@ -15,47 +14,26 @@ in {
     programs.starship = {
       enable = true;
       settings = {
-        command_timeout = 500;
+        format = "$os$directory  ";
+        right_format = "$nix_shell";
         add_newline = true;
-        format = builtins.concatStringsSep "" [
-          "$nix_shell"
-          "$os"
-          "$directory"
-          "$cmd_duration"
-          "$status"
-          "$line_break"
-          "[❯](bold purple)"
-          ''''${custom.space}''
-        ];
-        custom.space = {
-          when = ''! test $env'';
-          format = "  ";
-        };
-        continuation_prompt = "∙  ┆ ";
-        line_break = {disabled = false;};
-        cmd_duration = {
-          min_time = 1000;
-          format = "[ $duration ](fg:yellow)";
-        };
+
         nix_shell = {
           disabled = false;
-          format = "[${pad.left}](fg:white)[ ](bg:white fg:black)[${pad.right}](fg:white)   ";
+          format = "[${pad.right}   ](bg:green fg:black)";
         };
         directory = {
-          format = " [${pad.left}](fg:bright-black)[$path](bg:bright-black fg:white)[${pad.right}](fg:bright-black)";
+          format = " [ $path ](bg:red fg:white)[${pad.right} ](bg:white fg:red)";
           truncation_length = 6;
           truncation_symbol = ".../";
         };
         os = {
           disabled = false;
-          format = "$symbol";
+          format = "[ $symbol ](bg:white fg:black)";
         };
         os.symbols = {
-          Arch = os "" "bright-blue";
-          Debian = os "" "red";
-          NixOS = os "" "blue";
-          Ubuntu = os "" "bright-purple";
-          Macos = os "" "red";
+          NixOS = " ";
+          Macos = " ";
         };
       };
     };

@@ -29,7 +29,6 @@
   system.activationScripts.extraActivation.text = ''
     pmset -a displaysleep 20     
     pmset -b displaysleep 5    
-    defaults -currentHost write com.apple.screensaver idleTime 60
   '';
   system = {
     primaryUser = "zayaanazam";
@@ -58,7 +57,9 @@
         FXPreferredViewStyle = "clmv";
         ShowPathbar = true;
       };
-      loginwindow.LoginwindowText = "be delusional.";
+      loginwindow = {
+        LoginwindowText = "be delusional.";
+      };
       trackpad = {
         Clicking = true;
         Dragging = true;
@@ -77,6 +78,12 @@
         AppleShowAllExtensions = false;
         AppleTemperatureUnit = "Celsius";
         NSTableViewDefaultSizeMode = 1;
+        KeyRepeat = 2;
+      };
+      CustomUserPreferences = {
+        "com.apple.screensaver" = {
+          loginWindowIdleTime = 60;
+        };
       };
     };
   };

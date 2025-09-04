@@ -41,10 +41,11 @@
         };
         nightly-neovim = inputs.neovim-nightly.packages.${system}.default;
 
-        mkNvim = import ./overlays/nvim-package.nix {inherit pkgs self nightly-neovim;};
+        mkNvim = import ./packages/nvim-package.nix {inherit pkgs self nightly-neovim;};
+        mkTmux = import ./packages/tmux-package.nix {inherit pkgs self;};
       in {
         packages.nvim = mkNvim;
-        packages.iosevka = pkgs.iosevka;
+        packages.tmux = mkTmux;
       }
     )
     // {

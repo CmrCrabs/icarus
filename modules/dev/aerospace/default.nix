@@ -85,6 +85,10 @@
             run = "move-node-to-workspace 4";
           }
           {
+            "if".app-id = "com.spotify.client";
+            run = "move-node-to-workspace 5";
+          }
+          {
             "if".app-id = "com.codeweavers.CrossOver";
             run = "move-node-to-workspace 6";
           }

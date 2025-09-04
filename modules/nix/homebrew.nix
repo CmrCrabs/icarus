@@ -18,6 +18,7 @@
       "discord"
       "flux-app"
       "AlDente"
+      "Spotify"
     ];
     onActivation = {
       autoUpdate = false;

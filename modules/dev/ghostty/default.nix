@@ -16,6 +16,9 @@
         ]; 
         command = "${pkgs.fish}/bin/fish";
         shell-integration = "fish";
+        shell-integration-features = "no-cursor";
+        cursor-style-blink = "true";
+        cursor-style = "block_hollow";
         window-title-font-family = "Iosevka-Icarus";
         theme = "Kanagawa Dragon";
         custom-shader = "${./crt.glsl}";
@@ -24,9 +27,8 @@
         title = " ";
         window-padding-balance = true;
         window-padding-x = 20; 
-        window-padding-y = 2;
+        window-padding-y = 20;
         window-padding-color = "background";
-        # focus-follows-mouse = true;
         macos-titlebar-proxy-icon = "hidden";
         # macos-titlebar-style = "hidden"; enable when aerospace
         macos-icon = "retro";

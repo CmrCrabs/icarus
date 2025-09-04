@@ -2,7 +2,7 @@
 let
   customIosevka = pkgs.iosevka.override {
     set = "Icarus";
-    privateBuildPlan = builtins.readFile ../../overlays/private-build-plans.toml;
+    privateBuildPlan = builtins.readFile ../../packages/private-build-plans.toml;
   };
 
 in {

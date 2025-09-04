@@ -32,6 +32,7 @@ in {
       shellAliases = aliases;
       interactiveShellInit = ''
         starship init fish | source
+        tmux
       '';
       shellInit = ''
         set -g fish_greeting

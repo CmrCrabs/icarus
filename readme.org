@@ -3,6 +3,7 @@
 + or [[https://github.com/CmrCrabs/dotfiles][dotfiles]] for very old flake(s)
 
 *** install
+**** osx
 $ sh <(curl --proto '\=https' --tlsv1.2 -L https://nixos.org/nix/install)
 
 $ sudo nix run --extra-experimental-features "nix-command flakes" nix-darwin/master#darwin-rebuild -- switch
@@ -11,9 +12,15 @@ $ sudo nix run nix-darwin --extra-experimental-features "nix-command flakes" -- 
 
 *** outputs:
 **** system configs:
-macos:
+osx:
 + nix run github:cmrcrabs/icarus#osx 
 
 **** packages:
+full development shell:
++ nix run github:cmrcrabs/icarus#shell
+
 neovim config:
 + nix run github:cmrcrabs/icarus#nvim 
+
+tmux config:
++ nix run github:cmrcrabs/icarus#tmux

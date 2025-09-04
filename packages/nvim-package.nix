@@ -13,6 +13,9 @@ let
     ## formatters
     alejandra
     stylua
+
+    ## deps
+    ripgrep
   ];
 
   tempDir = pkgs.runCommand "iniFolder" {} ''
