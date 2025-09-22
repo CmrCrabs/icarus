@@ -22,7 +22,8 @@
     };
 
     neovim-nightly.url = "github:nix-community/neovim-nightly-overlay";
-
+    emacs-overlay.url = "github:nix-community/emacs-overlay";
+    emacs-overlay.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs = {
@@ -37,15 +38,19 @@
           inherit system;
           overlays = [
             inputs.neovim-nightly.overlays.default
+            inputs.emacs-overlay.overlay
           ];
         };
         nightly-neovim = inputs.neovim-nightly.packages.${system}.default;
+        emacs-overlay = inputs.emacs-overlay.packages.${system}.default;
 
         mkNvim = import ./packages/nvim-package.nix {inherit pkgs self nightly-neovim;};
+        mkEmacs = import ./packages/emacs-package.nix {inherit pkgs self;};
         mkTmux = import ./packages/tmux-package.nix {inherit pkgs self;};
       in {
         packages.nvim = mkNvim;
         packages.tmux = mkTmux;
+        packages.emacs = mkEmacs;
       }
     )
     // {

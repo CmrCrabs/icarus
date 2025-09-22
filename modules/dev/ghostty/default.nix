@@ -30,7 +30,7 @@
         window-padding-y = 20;
         window-padding-color = "background";
         macos-titlebar-proxy-icon = "hidden";
-        # macos-titlebar-style = "hidden"; enable when aerospace
+        macos-titlebar-style = "hidden";
         macos-icon = "retro";
         window-colorspace = "display-p3";
         auto-update = "off";

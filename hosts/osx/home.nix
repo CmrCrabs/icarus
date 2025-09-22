@@ -1,6 +1,8 @@
 {
   imports = [
     ./../../modules/dev
+    ./../../modules/editors
+    ./../../modules/desktop
 
     ./../../scripts
   ];

@@ -7,7 +7,7 @@ let
 
   tempDir = pkgs.runCommand "iniFolder" {} ''
     mkdir -p $out
-    cp -r ${../modules/dev/tmux} $out/tmux
+    cp -r ${../modules/desktop/tmux} $out/tmux
   '';
   
   tmuxWrapper = pkgs.writeShellScriptBin "tmux" ''

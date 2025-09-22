@@ -10,7 +10,7 @@ let
     "wft" = "ping gnu.org -c 1";
     "nv" = "nvim";
     "cpng" = "mogrify -format png *.jpg && rm *.jpg";
-    "shell" = "nix-shell . --command \"fish\"";
+    "shell" = "nix-shell --command \"fish\" .";
   };
   aliases = {
     "ls" = "eza --icons --no-permissions --no-user --no-time --group-directories-first";
@@ -32,11 +32,14 @@ in {
       shellAliases = aliases;
       interactiveShellInit = ''
         starship init fish | source
-        tmux
+        if type -q tmux
+          if not test -n "$TMUX"
+            tmux attach-session -t default; or tmux new-session -s icrs 
+          end
+        end
       '';
       shellInit = ''
         set -g fish_greeting
-        colors
       '';
     };
   };

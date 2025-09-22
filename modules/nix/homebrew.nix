@@ -19,10 +19,13 @@
       "flux-app"
       "AlDente"
       "Spotify"
+      "music-presence"
+      "protonvpn"
+      "caffeine"
     ];
     onActivation = {
       autoUpdate = false;
-      cleanup = "zap"; # Uninstall packages/casks not in Brewfile
+      cleanup = "zap";
       upgrade = false;
     };
   };

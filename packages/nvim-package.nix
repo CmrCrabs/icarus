@@ -9,6 +9,7 @@ let
     vimPlugins.omnisharp-extended-lsp-nvim
     nixd
     tinymist
+    haskell-language-server
 
     ## formatters
     alejandra
@@ -20,10 +21,11 @@ let
 
   tempDir = pkgs.runCommand "iniFolder" {} ''
     mkdir -p $out
-    cp -r ${../modules/dev/nvim} $out/nvim
+    cp -r ${../modules/editors/nvim} $out/nvim
   '';
   
   nvimWrapper = pkgs.writeShellScriptBin "nvim" ''
+    echo ${tempDir}
     exec ${nightly-neovim}/bin/nvim -u ${tempDir}/nvim/init.lua "$@"
   '';
 in

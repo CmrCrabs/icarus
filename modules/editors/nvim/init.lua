@@ -19,7 +19,6 @@ vim.keymap.set('n', '<C-w>', ':bd<CR>')
 
 vim.pack.add({
   { src = "https://github.com/rebelot/kanagawa.nvim" },
-  { src = "https://github.com/catppuccin/nvim" },
   { src = "https://github.com/echasnovski/mini.pick" },
   { src = "https://github.com/neovim/nvim-lspconfig" },
   { src = "https://github.com/akinsho/bufferline.nvim" },
@@ -49,12 +48,6 @@ require "kanagawa".setup({
   }
 })
 vim.cmd("colorscheme kanagawa-dragon")
---require("catppuccin").setup({
---  flavour = "mocha", -- latte, frappe, macchiato, mocha
---  transparent_background = true,
---  term_colors = true,
---})
---vim.cmd("colorscheme catppuccin")
 
 require "luasnip".setup()
 require "nvim-autopairs".setup()
@@ -82,6 +75,7 @@ vim.lsp.enable({
   "nixd",
   "ts_ls",
   "omnisharp",
+  "haskell-language-server"
 })
 local lspconfig = require("lspconfig")
 
@@ -112,6 +106,7 @@ require("nvim-treesitter").setup({
   "tsx",
   "typescript",
   "rust",
+  "haskell",
 })
 
 require("blink.cmp").setup({
@@ -130,24 +125,24 @@ require("blink.cmp").setup({
 
 require("lualine").setup({
   sections = {
-    lualine_a = { { 'mode', seperator = "▓▒░" } },
+    lualine_a = { { 'mode', separator = { right = "▓▒░" } } },
     lualine_b = { 'filename', 'branch', 'diff' },
     lualine_c = {},
     lualine_x = {},
     lualine_y = { 'filetype' },
-    lualine_z = { { 'location', seperator = "░▒▓" } }
+    lualine_z = { { 'location', separator = { left = "░▒▓" } } }
   },
   options = {
     component_separators = { left = '', right = '' },
     section_separators = { left = '', right = '' },
   }
 })
-local lualine_groups = { 'Lualine_b', 'Lualine_c', 'Lualine_x', 'Lualine_y' }
+local lualine_sections = { 'b', 'c', 'x', 'y' }
 local lualine_modes = { 'normal', 'insert', 'visual', 'replace', 'command', 'inactive' }
 
-for _, group in ipairs(lualine_groups) do
+for _, section in ipairs(lualine_sections) do
   for _, mode in ipairs(lualine_modes) do
-    vim.cmd(string.format("hi %s_%s guibg=NONE", group, mode))
+    vim.cmd(string.format("hi Lualine_%s_%s guibg=NONE", section, mode))
   end
 end
 

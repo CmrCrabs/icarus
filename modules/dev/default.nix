@@ -3,19 +3,15 @@
   imports = [
     ./ghostty
     ./git
-    ./nvim
     ./fish
     ./starship
-    ./aerospace
-    ./tmux
+    ./langtools
   ];
 
   config.ghostty.enable = lib.mkDefault true;
   config.git.enable = lib.mkDefault true;
-  config.nvim.enable = lib.mkDefault true;
   config.fish.enable = lib.mkDefault true;
   config.starship.enable = lib.mkDefault true;
-  config.aerospace.enable = lib.mkDefault true;
-  config.tmux.enable = lib.mkDefault true;
+  config.langtools.enable = lib.mkDefault true;
 }
 
