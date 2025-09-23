@@ -2,7 +2,9 @@
 
 let
   deps = with pkgs; [
-    ## mewo
+    ripgrep
+    git
+    fd
   ];
 
   configDir = pkgs.runCommand "configDir" {} ''
