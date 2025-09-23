@@ -4,25 +4,23 @@ let
   deps = with pkgs; [
     ripgrep
     git
-    fd
   ];
 
-  configDir = pkgs.runCommand "configDir" {} ''
-    mkdir -p $out
-    cp -r ${../modules/editors/emacs/doom} $out/doom
-  '';
- 
   emacsWrapper = pkgs.writeShellScriptBin "emacs" ''
-    target="$HOME/.emacs"
+    emacsdir="$HOME/.emacs.d"
+    doomdir="$HOME/.doom.d"
 
-    if [[ ! -d "$target" ]]; then
-      echo "bootstrapping config"
-      mkdir -p "$target"
-      cp -r ${configDir}/doom/* "$target"/
+    if [[ ! -d "$emacsdir" ]]; then
+      echo "bootstrapping .emacs.d"
+      git clone https://github.com/hlissner/doom-emacs "$emacsdir"
+      git clone https://github.com/cmrcrabs/.doom.d "$doomdir"
+      echo "syncing doom"
+      ~/.emacs.d/bin/doom sync
+      ~/.emacs.d/bin/doom env
       echo "..done"
     fi
 
-    exec ${pkgs.emacs}/bin/emacs --init-directory="$target" "$@"
+    exec ${pkgs.emacs}/bin/emacs "$@"
   '';
 in
 
