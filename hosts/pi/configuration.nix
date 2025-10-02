@@ -38,6 +38,7 @@
   nixpkgs.config.allowUnfree = true;
 
   programs.fish.enable = true;
+  services.dbus.enable = true;
 
   system.stateVersion = "25.11";
 }
