@@ -95,6 +95,7 @@ vim.keymap.set('n', '<leader>lf', vim.lsp.buf.format, {})
 require("nvim-treesitter").setup({
   "lua",
   "javascript",
+  "haskell",
   "html",
   "nix",
   "bash",
@@ -106,7 +107,6 @@ require("nvim-treesitter").setup({
   "tsx",
   "typescript",
   "rust",
-  "haskell",
 })
 
 require("blink.cmp").setup({

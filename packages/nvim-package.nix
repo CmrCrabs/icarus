@@ -25,7 +25,6 @@ let
   '';
   
   nvimWrapper = pkgs.writeShellScriptBin "nvim" ''
-    echo ${tempDir}
     exec ${nightly-neovim}/bin/nvim -u ${tempDir}/nvim/init.lua "$@"
   '';
 in

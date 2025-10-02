@@ -32,48 +32,65 @@
     flake-utils,
     ...
   } @ inputs:
-    flake-utils.lib.eachDefaultSystem (
-      system: let
-        pkgs = import nixpkgs {
-          inherit system;
-          overlays = [
-            inputs.neovim-nightly.overlays.default
-            inputs.emacs-overlay.overlay
-          ];
-        };
-        nightly-neovim = inputs.neovim-nightly.packages.${system}.default;
-        emacs-overlay = inputs.emacs-overlay.packages.${system}.default;
-
-        mkNvim = import ./packages/nvim-package.nix {inherit pkgs self nightly-neovim;};
-        mkEmacs = import ./packages/emacs-package.nix {inherit pkgs self;};
-        mkTmux = import ./packages/tmux-package.nix {inherit pkgs self;};
-      in {
-        packages.nvim = mkNvim;
-        packages.tmux = mkTmux;
-        packages.emacs = mkEmacs;
-      }
-    )
-    // {
-      darwinConfigurations."osx" = inputs.nix-darwin.lib.darwinSystem {
-        system = "aarch64-darwin";
-        modules = [ 
-          ./hosts/osx/configuration.nix
-          inputs.mac-app-util.darwinModules.default
-          inputs.home-manager.darwinModules.home-manager
-          {
-            home-manager = {
-              useGlobalPkgs = true;
-              useUserPackages = true;
-              extraSpecialArgs = {inherit inputs;};
-              users.zayaanazam = import ./hosts/osx/home.nix;
-              sharedModules = [
-                inputs.mac-app-util.homeManagerModules.default
-              ];
-            };
-          }
-          inputs.nix-homebrew.darwinModules.nix-homebrew
+  flake-utils.lib.eachDefaultSystem (
+    system: let
+      pkgs = import nixpkgs {
+        inherit system;
+        overlays = [
+          inputs.neovim-nightly.overlays.default
+          inputs.emacs-overlay.overlay
         ];
-        specialArgs = { inherit inputs; };
       };
+      nightly-neovim = inputs.neovim-nightly.packages.${system}.default;
+      emacs-overlay = inputs.emacs-overlay.packages.${system}.default;
+
+      mkNvim = import ./packages/nvim-package.nix {inherit pkgs self nightly-neovim;};
+      mkEmacs = import ./packages/emacs-package.nix {inherit pkgs self;};
+      mkTmux = import ./packages/tmux-package.nix {inherit pkgs self;};
+    in {
+      packages.nvim = mkNvim;
+      packages.tmux = mkTmux;
+      packages.emacs = mkEmacs;
+    }
+  )
+  // {
+    darwinConfigurations."osx" = inputs.nix-darwin.lib.darwinSystem {
+      system = "aarch64-darwin";
+      modules = [ 
+        ./hosts/osx/configuration.nix
+        inputs.mac-app-util.darwinModules.default
+        inputs.home-manager.darwinModules.home-manager
+        {
+          home-manager = {
+            useGlobalPkgs = true;
+            useUserPackages = true;
+            extraSpecialArgs = {inherit inputs;};
+            users.zayaanazam = import ./hosts/osx/home.nix;
+            sharedModules = [
+              inputs.mac-app-util.homeManagerModules.default
+            ];
+          };
+        }
+        inputs.nix-homebrew.darwinModules.nix-homebrew
+      ];
+      specialArgs = { inherit inputs; };
     };
+
+    nixosConfigurations."pi" = nixpkgs.lib.nixosSystem {
+      system = "aarch64-linux";
+      modules = [
+        ./hosts/pi/configuration.nix
+        inputs.home-manager.nixosModules.home-manager
+        {
+          home-manager = {
+            useGlobalPkgs = true;
+            useUserPackages = true;
+            extraSpecialArgs = { inherit inputs; };
+            users.pi = import ./hosts/pi/home.nix;
+          };
+        }
+      ];
+      specialArgs = { inherit inputs; };
+    };
+  };
 }

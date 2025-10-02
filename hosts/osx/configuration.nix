@@ -18,8 +18,6 @@
   nixpkgs.hostPlatform = "aarch64-darwin";
   system.stateVersion = 6;
   nixpkgs.config.allowUnfree = true;
-  nixpkgs.config.allowUnsupportedSystem = true;
-
 
   security.pam.services.sudo_local.touchIdAuth = true;
 

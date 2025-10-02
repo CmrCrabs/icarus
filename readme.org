@@ -16,11 +16,16 @@ osx:
 + nix run github:cmrcrabs/icarus#osx 
 
 **** packages:
-full development shell:
-+ nix run github:cmrcrabs/icarus#shell
+emacs config:
++ nix run github:cmrcrabs/icarus#emacs 
 
 neovim config:
 + nix run github:cmrcrabs/icarus#nvim 
 
 tmux config:
 + nix run github:cmrcrabs/icarus#tmux
+
+
+full development shell (lie):
++ nix run github:cmrcrabs/icarus#shell
+
