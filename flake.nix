@@ -86,7 +86,7 @@
             useGlobalPkgs = true;
             useUserPackages = true;
             extraSpecialArgs = { inherit inputs; };
-            users.pi = import ./hosts/pi/home.nix;
+            users.zayaanazam = import ./hosts/pi/home.nix;
           };
         }
       ];
