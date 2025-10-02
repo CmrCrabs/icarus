@@ -1,9 +1,10 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, inputs, ... }:
 
 {
   imports =
-    [ # Include the results of the hardware scan.
+    [
       ./hardware-configuration.nix
+      inputs.home-manager.nixosModules.home-manager
     ];
 
   boot.loader.grub.enable = false;
@@ -16,8 +17,6 @@
       wifi.powersave = false;
     };
   };
-
-  # Configure network connections interactively with nmcli or nmtui.
 
   time.timeZone = "Europe/London";
   i18n.defaultLocale = "en_GB.UTF-8";
@@ -32,7 +31,7 @@
 
   users.users.zayaanazam = {
     isNormalUser = true;
-    extraGroups = [ "wheel" "networkmanager" ]; # Enable ‘sudo’ for the user.
+    extraGroups = [ "wheel" "networkmanager" ];
     packages = with pkgs; [ ];
   };
 
