@@ -8,7 +8,7 @@
 {
   options.aerospace.enable = lib.mkEnableOption "enables aerospace";
 
-  config = lib.mkIf config.git.enable {
+  config = lib.mkIf config.aerospace.enable {
     programs.aerospace = {
       enable = true;
       userSettings = {
