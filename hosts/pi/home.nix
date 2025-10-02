@@ -5,9 +5,9 @@
     ./../../modules/desktop
   ];
   
-  config.ghostty.enable = false;
-  config.langtools.enable = false;
-  config.aerospace.enable = false;
+  ghostty.enable = false;
+  langtools.enable = false;
+  aerospace.enable = false;
 
   home.username = "zayaanazam";
   home.stateVersion = "25.11";
