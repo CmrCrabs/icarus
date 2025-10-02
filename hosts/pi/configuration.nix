@@ -31,8 +31,12 @@
 
   users.users.zayaanazam = {
     isNormalUser = true;
-    extraGroups = [ "wheel" "networkmanager" ];
+    extraGroups = [ "wheel" "networkmanager" "docker" ];
     packages = with pkgs; [ ];
+  };
+
+  virtualisation.docker = {
+    enable = true;
   };
 
   nixpkgs.config.allowUnfree = true;
