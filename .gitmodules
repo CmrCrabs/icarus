@@ -6,4 +6,4 @@
 	url = https://github.com/cmrcrabs/nvim
 [submodule "wallpapers"]
 	path = wallpapers
-	url = https://github.com/cmrcrabs/wallpapers
+  url = https://github.com/cmrcrabs/wallpapers

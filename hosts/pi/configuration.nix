@@ -38,6 +38,9 @@
   virtualisation.docker = {
     enable = true;
   };
+  environment.systemPackages = with pkgs; [
+    vim
+  ];
 
   nixpkgs.config.allowUnfree = true;
 
