@@ -8,12 +8,16 @@ $ sh <(curl --proto '\=https' --tlsv1.2 -L https://nixos.org/nix/install)
 
 $ sudo nix run --extra-experimental-features "nix-command flakes" nix-darwin/master#darwin-rebuild -- switch
 
-$ sudo nix run nix-darwin --extra-experimental-features "nix-command flakes" -- switch --flake .#osx
+$ sudo nix run nix-darwin --extra-experimental-features "nix-command flakes" -- switch --flake github:cmrcrabs/icarus#osx
+**** pi
+$sudo nixos-rebuild switch --flake github:cmrcrabs/icarus#pi --extra-experimental-features "nix-command flakes"
 
 *** outputs:
 **** system configs:
 osx:
 + nix run github:cmrcrabs/icarus#osx 
+pi:
++ nix run github:cmrcrabs/icarus#pi
 
 **** packages:
 emacs config:
@@ -24,7 +28,7 @@ neovim config:
 
 tmux config:
 + nix run github:cmrcrabs/icarus#tmux
-
++ requires fish
 
 full development shell (lie):
 + nix run github:cmrcrabs/icarus#shell
