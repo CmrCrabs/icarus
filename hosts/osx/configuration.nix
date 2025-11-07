@@ -1,5 +1,6 @@
 {
  config,
+ pkgs,
  lib,
  ...
 }:
@@ -23,7 +24,7 @@
 
   # fix path issues
   programs.fish.enable = true;
-
+ 
   # mac settings
   system.activationScripts.extraActivation.text = ''
     pmset -a displaysleep 20     

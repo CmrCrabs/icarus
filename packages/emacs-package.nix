@@ -15,8 +15,8 @@ let
       git clone https://github.com/hlissner/doom-emacs "$emacsdir"
       git clone https://github.com/cmrcrabs/.doom.d "$doomdir"
       echo "syncing doom"
-      ~/.emacs.d/bin/doom sync
-      ~/.emacs.d/bin/doom env
+      "$emacsdir"/bin/doom sync
+      "$emacsdir"/bin/doom env
       echo "..done"
     fi
 

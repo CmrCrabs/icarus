@@ -5,7 +5,9 @@
  pkgs,
  ...
 }:
-{
+let
+  gaps = 30;
+in {
   options.aerospace.enable = lib.mkEnableOption "enables aerospace";
 
   config = lib.mkIf config.aerospace.enable {
@@ -13,11 +15,6 @@
       enable = true;
       userSettings = {
         start-at-login = true;
-
-        # after-startup-command = [
-        #   "exec-and-forget open -a Flux"
-        #   "exec-and-forget open -a AlDente"
-        # ];
 
         mode.main.binding = {
           alt-h = "focus left";
@@ -55,17 +52,28 @@
           alt-a = "layout tiles accordion";
           alt-b = "layout horizontal vertical";
           alt-m = "macos-native-fullscreen";
+          alt-e = "exec-and-forget ${pkgs.emacs}/bin/emacsclient -s /tmp/emacs501/server -c -a \"\" -F '((width . 100) (height . 50))'";
 
           alt-shift-s = "exec-and-forget screencapture -i -c";
+          alt-r = "mode resize";
+        };
+        mode.resize.binding = {
+          h = "resize width -50";
+          j = "resize height +50";
+          k = "resize height -50";
+          l = "resize width +50";
+
+          enter = "mode main";
+          esc = "mode main";
         };
 
         gaps = {
-          inner.horizontal = 40;
-          inner.vertical = 40;
-          outer.left = 40;
-          outer.top = 40;
-          outer.bottom = 40;
-          outer.right = 40;
+          inner.horizontal = gaps;
+          inner.vertical = gaps;
+          outer.left = gaps;
+          outer.top = gaps;
+          outer.bottom = gaps;
+          outer.right = gaps;
         };
         on-window-detected = [
           {
@@ -93,16 +101,8 @@
             run = "move-node-to-workspace 6";
           }
           {
-            "if".app-id = "com.codeweavers.CrossOver";
-            run = "move-node-to-workspace 6";
-          }
-          {
             "if".app-id = "com.valve.steam";
             run = "move-node-to-workspace 7";
-          }
-          {
-            "if".app-id = "com.codeweavers.CrossOverHelper.4DB4563826BAD0EB2F60EE6E42D0EA4B.646ABED859EB8345CB7610A4E8B48633";
-            run = "move-node-to-workspace 8";
           }
         ];
       };

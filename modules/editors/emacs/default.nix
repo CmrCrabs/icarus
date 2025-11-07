@@ -4,7 +4,7 @@
 
   config = lib.mkIf config.emacs.enable {
     home.packages = [
-      inputs.self.packages.${pkgs.system}.emacs
+      pkgs.emacs
     ];
   };
 }
