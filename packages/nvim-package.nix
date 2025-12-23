@@ -5,7 +5,7 @@ let
     ## lsps
     lua-language-server
     typescript-language-server
-    rust-analyzer
+    #rust-analyzer
     vimPlugins.omnisharp-extended-lsp-nvim
     nixd
     tinymist

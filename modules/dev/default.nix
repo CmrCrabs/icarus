@@ -6,6 +6,7 @@
     ./fish
     ./starship
     ./langtools
+    ./minecraft
   ];
 
   config.ghostty.enable = lib.mkDefault true;
@@ -13,5 +14,6 @@
   config.fish.enable = lib.mkDefault true;
   config.starship.enable = lib.mkDefault true;
   config.langtools.enable = lib.mkDefault true;
+  config.minecraft.enable = lib.mkDefault true;
 }
 

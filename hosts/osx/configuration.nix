@@ -8,6 +8,7 @@
   imports = [
     ./../../modules/nix/fonts.nix
     ./../../modules/nix/homebrew.nix
+    ./../../modules/nix/syncthing.nix
   ];
 
   users.users.zayaanazam = {

@@ -9,8 +9,17 @@
       gnumake
       ninja
 
+      # general
+      zlib
+
+      # haskell
+      ghc
+      cabal-install
+      ormolu
+
       # rust
-      # rustup
+      rustup
+      spirv-tools
     ];
   };
 }
