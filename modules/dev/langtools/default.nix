@@ -20,6 +20,9 @@
       # rust
       rustup
       spirv-tools
+
+      # java
+      jdk25_headless
     ];
   };
 }

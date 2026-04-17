@@ -16,9 +16,9 @@ in {
     ];
     programs.git = {
       enable = true;
-      userEmail = email;
-      userName = name;
-      extraConfig = {
+      settings = {
+        user.email = email;
+        user.name = name;
         color.ui = "true";
         core.editor = "nvim";
         init.defaultBranch = "main";

@@ -44,12 +44,12 @@
       nightly-neovim = inputs.neovim-nightly.packages.${system}.default;
 
       mkNvim = import ./packages/nvim-package.nix {inherit pkgs self nightly-neovim;};
-      mkEmacs = import ./packages/emacs-package.nix {inherit pkgs self;};
+      #mkEmacs = import ./packages/emacs-package.nix {inherit pkgs self;};
       mkTmux = import ./packages/tmux-package.nix {inherit pkgs self;};
     in {
       packages.nvim = mkNvim;
       packages.tmux = mkTmux;
-      packages.emacs = mkEmacs;
+      #packages.emacs = mkEmacs;
     }
   )
   // {

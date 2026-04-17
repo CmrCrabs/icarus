@@ -36,7 +36,7 @@
     startup.chime = true;
     keyboard = {
       enableKeyMapping = true;
-      remapCapsLockToEscape = true;
+      remapCapsLockToControl = true;
     };
     defaults = {
       screensaver = {

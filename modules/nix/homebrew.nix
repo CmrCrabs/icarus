@@ -1,5 +1,6 @@
-{ inputs, ... }:
+{ inputs, config, ... }:
 {
+  # homebrew installation
   nix-homebrew = {
     enable = true;
     user = "zayaanazam";
@@ -12,15 +13,16 @@
     mutableTaps = false;
   };
 
+  # homebrew
   homebrew = {
     enable = true;
-    taps = [
-      "d12frosted/emacs-plus"
-    ];
+    taps = builtins.attrNames config.nix-homebrew.taps;
     brews = [
-      # "emacs-plus"
+      "mole"
+      "emacs-plus@31"
     ];
     casks = [
+      "kicad"
       "discord"
       "flux-app"
       "AlDente"

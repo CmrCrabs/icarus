@@ -10,6 +10,7 @@ let
     nixd
     tinymist
     haskell-language-server
+    jdt-language-server
 
     ## formatters
     alejandra

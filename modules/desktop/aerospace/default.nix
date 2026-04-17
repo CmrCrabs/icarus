@@ -13,8 +13,15 @@ in {
   config = lib.mkIf config.aerospace.enable {
     programs.aerospace = {
       enable = true;
-      userSettings = {
+      launchd.enable = true;
+      settings = {
         start-at-login = true;
+
+        exec-on-workspace-change = [
+            "/bin/bash"
+            "-c"
+            "~/icarus/scripts/window_change.sh"
+        ];
 
         mode.main.binding = {
           alt-h = "focus left";
@@ -55,16 +62,6 @@ in {
           alt-e = "exec-and-forget ${pkgs.emacs}/bin/emacsclient -s /tmp/emacs501/server -c -a \"\" -F '((width . 100) (height . 50))'";
 
           alt-shift-s = "exec-and-forget screencapture -i -c";
-          alt-r = "mode resize";
-        };
-        mode.resize.binding = {
-          h = "resize width -50";
-          j = "resize height +50";
-          k = "resize height -50";
-          l = "resize width +50";
-
-          enter = "mode main";
-          esc = "mode main";
         };
 
         gaps = {
@@ -81,28 +78,32 @@ in {
             run = "move-node-to-workspace 1";
           }
           {
-            "if".app-id = "com.mitchellh.ghostty";
+            "if".app-id = "org.kicad-pcb";
             run = "move-node-to-workspace 2";
           }
           {
             "if".app-id = "md.obsidian";
-            run = "move-node-to-workspace 3";
+            run = "move-node-to-workspace 4";
           }
           {
             "if".app-id = "com.hnc.Discord";
-            run = "move-node-to-workspace 4";
+            run = "move-node-to-workspace 5";
           }
           {
             "if".app-id = "com.spotify.client";
             run = "move-node-to-workspace 5";
           }
           {
-            "if".app-id = "com.codeweavers.CrossOver";
+            "if".app-id = "com.mitchellh.ghostty";
             run = "move-node-to-workspace 6";
           }
           {
+            "if".app-id = "com.codeweavers.CrossOver";
+            run = "move-node-to-workspace 9";
+          }
+          {
             "if".app-id = "com.valve.steam";
-            run = "move-node-to-workspace 7";
+            run = "move-node-to-workspace 9";
           }
         ];
       };

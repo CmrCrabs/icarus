@@ -75,7 +75,8 @@ vim.lsp.enable({
   "nixd",
   "ts_ls",
   "omnisharp",
-  "haskell-language-server"
+  "haskell-language-server",
+  "jdtls",
 })
 local lspconfig = require("lspconfig")
 
