@@ -20,6 +20,8 @@
     brews = [
       "mole"
       "emacs-plus@31"
+      "libvterm"
+      "libtool"
     ];
     casks = [
       "kicad"

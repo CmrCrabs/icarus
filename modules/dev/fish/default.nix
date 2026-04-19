@@ -35,11 +35,11 @@ in {
       shellAliases = aliases;
       interactiveShellInit = ''
         starship init fish | source
-        if type -q tmux
-          if not test -n "$TMUX"
-            tmux attach-session -t icrs; or tmux new-session -s icrs 
-          end
-        end
+        # if type -q tmux
+        #   if not test -n "$TMUX"
+        #     tmux attach-session -t icrs; or tmux new-session -s icrs 
+        #   end
+        # end
       '';
       shellInit = ''
         set -g fish_greeting

@@ -1,14 +1,87 @@
-#+STARTUP: show2levels indent 
+#+TITLE: emacs literate configuration
+#+AUTHOR: Zayaan F. Azam
+#+STARTUP: show2levels indent
 
-* emacs
-** header
-#+begin_src elisp :tangle ~/.emacs.d/init.el
-  ;;; -*- lexical-binding: t -*-
+tags
+- :BINDING:
+- :PKM:
+- :WM-APRXM:
+- :OS-APRXM:
+
+* Core
+** Header
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+;;; -*- lexical-binding: t -*-
 #+end_src
+#+begin_src emacs-lisp :tangle ~/.emacs.d/early-init.el
+;;; -*- lexical-binding: t -*-
+#+end_src
+
+** optimisations
+*** startup performance
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+
+(defun efs/display-startup-time ()
+  (message "Emacs loaded in %s with %d garbage collections."
+           (format "%.2f seconds"
+                   (float-time
+                    (time-subtract after-init-time before-init-time)))
+           gcs-done))
+
+(add-hook 'emacs-startup-hook #'efs/display-startup-time)
+
+(setq
+ site-run-file nil
+ inhibit-default-init t
+ gc-cons-threshold most-positive-fixnum)
+
+(add-hook 'after-init-hook
+          #'(lambda () (setq gc-cons-threshold (* 8 1024 1024))))
+
+(unless (package-installed-p 'esup)
+  (package-refresh-contents)
+  (package-install 'esup))
+#+end_src
+
+** early-init
+#+begin_src emacs-lisp :tangle ~/.emacs.d/early-init.el
+(setq
+ site-run-file nil
+ inhibit-default-init t
+ gc-cons-threshold most-positive-fixnum)
+
+(add-hook 'after-init-hook
+          #'(lambda () (setq gc-cons-threshold (* 8 1024 1024))))
+#+end_src
+
+
+** temporary fixes
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+(setq vterm-shell "/etc/profiles/per-user/zayaanazam/bin/fish")
+#+end_src
+** osx-specific fixes
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+(use-package exec-path-from-shell
+  :init
+  (when (memq window-system '(mac ns x))
+    (exec-path-from-shell-initialize))
+  (when (daemonp)
+    (exec-path-from-shell-initialize)))
+#+end_src
+
 ** sane defaults
-#+begin_src elisp :tangle ~/.emacs.d/init.el
-(setq inhibit-startup-message t
-      initial-scratch-message nil)
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+(setq-default
+ inhibit-startup-screen t
+ inhibit-startup-message t
+ inhibit-startup-echo-area-message t
+ initial-scratch-message ""
+ initial-buffer-choice t)
+
+(setq-default indent-tabs-mode nil
+              tab-always-indent 'complete
+	            tab-width 2)
+
 
 (menu-bar-mode -1)
 (tool-bar-mode -1)
@@ -17,12 +90,17 @@
 (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
 (blink-cursor-mode 1)
 (setq-default tab-width 2)
+(unless (display-graphic-p)
+  (xterm-mouse-mode 1))
+
+(global-unset-key (kbd "M-z"))
 
 ;; line numbers
 (global-display-line-numbers-mode t)
 (column-number-mode)
-(setq display-line-numbers-type 'relative)
-(setq-default tab-width 2)
+  (setq display-line-numbers-type 'relative)
+  (add-hook 'vterm-mode-hook (lambda () (display-line-numbers-mode -1)))
+
 
 ;; backups
 (setq make-backup-files t)
@@ -32,283 +110,439 @@
 #+end_src
 
 ** use-package setup
-#+begin_src elisp :tangle ~/.emacs.d/init.el
-  (require 'package)
-  (setq package-archives '(
- 	("melpa" . "https://melpa.org/packages/")
-     ("org" . "https://orgmode.org/elpa/")
-     ("nongnu" . "https://elpa.nongnu.org/nongnu/")
-     ("elpa" . "https://elpa.gnu.org/packages/")))
-  (package-initialize)
-  
-  (setq use-package-always-ensure t)
-  
-  ;; bootstrap
-  (unless (package-installed-p 'use-package)
-    (package-refresh-contents)
-    (package-install 'use-package))
-  
-    (unless package-archive-contents
-      (package-refresh-contents))
-  
-    (require 'use-package)
-  
-  ;; debug
-  (if init-file-debug
-      (setq use-package-verbose t
-            use-package-expand-minimally nil
-            use-package-compute-statistics t
-            debug-on-error t)
-    (setq use-package-verbose nil
-          use-package-expand-minimally t))
-    (defun use-package-require (name &optional no-require body)
-      (if use-package-expand-minimally
-  	(use-package-concat
-  	 (unless no-require
-             (list (use-package-load-name name)))
-  	 body)
-        (if no-require
-            body
-  	(use-package-with-elapsed-timer
-              (format "Loading package %s" name)
-            `((if (not ,(use-package-load-name name))
-  		(display-warning 'use-package
-  				 (format "Cannot load %s" ',name)
-  				 :error)
-                ,@body))))))
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+(require 'package)
+(setq package-archives '(("melpa" . "https://melpa.org/packages/")
+			                   ("org" . "https://orgmode.org/elpa/")
+			                   ("nongnu" . "https://elpa.nongnu.org/nongnu/")
+			                   ("elpa" . "https://elpa.gnu.org/packages/")))
+(package-initialize)
+
+(setq use-package-always-ensure t
+      use-package-compute-statistics t)
+
+;; bootstrap
+(unless (package-installed-p 'use-package)
+  (package-refresh-contents)
+  (package-install 'use-package))
+
+(unless package-archive-contents
+  (package-refresh-contents))
+
+(require 'use-package)
+
 #+end_src
 
 ** minibuffer
-#+begin_src elisp :tangle ~/.emacs.d/init.el
-  (use-package vertico
-    :bind
-    (:map vertico-map
-         ("C-j" . vertico-next)
-         ("C-k" . vertico-previous)
-         ("C-h" . vertico-grid-left)
-         ("C-l" . vertico-grid-right))
-    :init
-    (vertico-mode)
-    (vertico-mouse-mode 1))
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+(use-package vertico
+  :bind
+  (:map vertico-map
+        ("C-j" . vertico-next)
+        ("C-k" . vertico-previous)
+        ("C-h" . vertico-grid-left)
+        ("C-l" . vertico-grid-right))
+  :init
+  (vertico-mode)
+  (vertico-mouse-mode 1))
 
-  (use-package orderless
-    :custom
-    (completion-styles '(orderless basic))
-    (completion-category-overrides '((file (styles basic partial-completion)))))
+(use-package orderless
+  :custom
+  (completion-styles '(orderless basic))
+  (completion-category-overrides '((file (styles basic partial-completion)))))
 
-  (use-package consult
-    :config
-    (setq consult-preview-key nil))
+(use-package consult
+  :config
+  (setq consult-preview-key nil))
 
-  ;; descriptors
-  (use-package marginalia
-    :bind (:map minibuffer-local-map
-		("M-A" . marginalia-cycle))
-    :init (marginalia-mode))
+;; descriptors
+(use-package marginalia
+  :bind (:map minibuffer-local-map
+	            ("M-A" . marginalia-cycle))
+  :init (marginalia-mode))
 #+end_src
 
 ** fuzzy finding / grep
-#+begin_src elisp :tangle ~/.emacs.d/init.el
-  (use-package affe)
-  ;; binds set keybinds>file browsing
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+(use-package affe)
+;; binds set keybinds>file browsing
 #+end_src
+
 ** file tree
-#+begin_src elisp :tangle ~/.emacs.d/init.el
-  (use-package neotree
-    :config
-    (setq neo-theme (if (display-graphic-p) 'nerd 'ascii)))
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+(use-package nerd-icons)
+(use-package neotree
+  :init
+  (setq neo-theme (if (display-graphic-p) 'nerd-icons 'ascii)))
+;;(neotree-dir "~/.emacs.d/"))
 
-  ;; binds set keybinds>file browsing
+;; binds set keybinds>file browsing
+#+end_src
 
+** tab bar
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+(use-package centaur-tabs
+  :config
+  (centaur-tabs-mode t)
+  (add-to-list 'centaur-tabs-excluded-prefixes "*"))
 #+end_src
-** dashboard
-#+begin_src elisp :tangle ~/.emacs.d/init.el
+
+** helpful (debugging)
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+(use-package helpful
+  :commands (helpful-callable helpful-variable helpful-key helpful-command))
+(global-set-key (kbd "C-h f") #'helpful-callable)
+(global-set-key (kbd "C-h v") #'helpful-variable)
+(global-set-key (kbd "C-h k") #'helpful-key)
+(global-set-key (kbd "C-h x") #'helpful-command)
 #+end_src
+
+* WM Emulation
+** window / buffer / workspace management
+
 ** terminal
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+(use-package vterm
+  :commands (vterm vterm-other-window))
+#+end_src
+
+** music
+
+** web browsing
+
 * keybindings
 ** setup
 *** evil
-#+begin_src elisp :tangle ~/.emacs.d/init.el
-  (use-package evil
-    :init 
-    (setq evil-want-integration t
-	        evil-want-keybinding nil)
-    :config 
-      (evil-global-set-key 'motion "j" 'evil-next-visual-line)
-      (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
-      (evil-mode))
-  (add-hook 'prog-mode-hook #'hs-minor-mode)
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+(use-package evil
+  :init
+  (setq evil-want-integration t
+        evil-want-keybinding nil)
+  :config
+  (evil-global-set-key 'motion "j" 'evil-next-visual-line)
+  (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
+  (define-key evil-insert-state-map (kbd "C-k") nil)
+  (define-key evil-insert-state-map (kbd "C-j") nil)
+  (evil-set-initial-state 'vterm-mode 'insert)
+  (evil-mode))
+
+(add-hook 'prog-mode-hook #'hs-minor-mode)
 
 #+end_src
 
 *** which-key
-#+begin_src elisp :tangle ~/.emacs.d/init.el
-  (use-package which-key
-    :init (which-key-mode)
-    :config
-    (setq which-key-idle-delay 0.3))
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+(use-package which-key
+  :init (which-key-mode)
+  :config
+  (setq which-key-idle-delay 0.3))
 #+end_src
 
 *** general
-#+begin_src elisp :tangle ~/.emacs.d/init.el
-  (use-package general
-    :config
-    (general-create-definer zf/leader
-      :keymaps '(normal visual)
-      :prefix "SPC"))
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+(use-package general
+  :config
+  (general-create-definer zf/leader
+    :keymaps '(normal visual)
+    :prefix "SPC"))
 #+end_src
 
 ** emacs-specific binds
-#+begin_src elisp :tangle ~/.emacs.d/init.el
-  (defun zf/reload-config ()
-    (interactive)
-    (org-babel-tangle-file "~/.emacs.d/config.org")
-    (load-file "~/.emacs.d/init.el"))
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+(defun zf/reload-config ()
+  "Reload config."
+  (interactive)
+  (org-babel-tangle-file "~/.emacs.d/config.org")
+  (load-file "~/.emacs.d/init.el"))
 
-  (defun zf/open-config ()
-    (interactive)
-    (find-file "~/.emacs.d/config.org"))
-  
-  (zf/leader
-    "e" '(:ignore t :which-key "emacs")
-    "ec" '(zf/open-config :which-key "open config")
-    "et" '(consult-theme :which-key "select theme")
-    "eq" '(save-buffers-kill-emacs :which-key "quit emacs")
-    "er" '(zf/reload-config :which-key "reload config"))
+(defun zf/open-config ()
+  "Open config."
+  (interactive)
+  (find-file "~/.emacs.d/config.org"))
 
-  (evil-define-key 'normal 'global (kbd "<tab>") 'evil-toggle-fold)
+(zf/leader
+  "e" '(:ignore t :which-key "emacs")
+  "ec" '(zf/open-config :which-key "open config")
+  "et" '(consult-theme :which-key "select theme")
+  "eq" '(save-buffers-kill-emacs :which-key "quit emacs")
+  "er" '(zf/reload-config :which-key "reload config"))
+
+(evil-define-key 'normal 'global (kbd "TAB") 'evil-toggle-fold)
 #+end_src
 
-** file related binds 
-#+begin_src elisp :tangle ~/.emacs.d/init.el
+** file related binds
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+(zf/leader
+  "f" '(:ignore t :which-key "file")
+  "ff" '((lambda () (interactive) (affe-find "~/")) :which-key "fuzzy file ~/")
+  "fo" '((lambda () (interactive) (affe-find "~/org/")) :which-key "fuzzy file ~/org/")
+  "f/" '(affe-grep :which-key "fuzzy grep")
+  "ft" '(:ignore t :which-key "tree")
+  "ftt" '(neotree-toggle :which-key "toggle")
+  "ftf" '(neotree-next-line :which-key "focus"))
 
-  (zf/leader
-    "/" '(consult-line :which-key "go to line")
+(evil-define-key 'normal 'global (kbd "/") 'consult-line)
 
-    "f" '(:ignore t :which-key "file")
-    "ff" '((lambda () (interactive) (affe-find "~/")) :which-key "fuzzy file ~/")
-    "fo" '((lambda () (interactive) (affe-find "~/org/")) :which-key "fuzzy file ~/org/")
-    "f/" '(affe-grep :which-key "fuzzy grep")
-    "ft" '(neotree-toggle :which-key "toggle tree")
-    "bs" '(consult-buffer :which-key "go to buffer"))
-
-  (evil-define-key 'normal neotree-mode-map (kbd "RET") 'neotree-enter)
-  (evil-define-key 'normal neotree-mode-map (kbd "r") 'neotree-refresh)
-  (evil-define-key 'normal neotree-mode-map (kbd "A") 'neotree-stretch-toggle)
-  (evil-define-key 'normal neotree-mode-map (kbd "H") 'neotree-hidden-file-toggle)
+(evil-define-key 'normal neotree-mode-map (kbd "r") 'neotree-refresh)
+(evil-define-key 'normal neotree-mode-map (kbd "RET") 'neotree-enter)
+(evil-define-key 'normal neotree-mode-map (kbd "O") 'neotree-change-root)
+(evil-define-key 'normal neotree-mode-map (kbd "A") 'neotree-stretch-toggle)
+(evil-define-key 'normal neotree-mode-map (kbd "H") 'neotree-hidden-file-toggle)
 #+end_src
+
 ** buffer management binds
-#+begin_src elisp :tangle ~/.emacs.d/init.el
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+(zf/leader
+  "b" '(:ignore t :which-key "buffer")
+  "bq" '(image-kill-buffer :which-key "kill current")
+  "bs" '(consult-buffer :which-key "go to buffer"))
 
-  (zf/leader
-    "b" '(:ignore t :which-key "buffer")
-    "bq" '(image-kill-buffer :which-key "kill current")
-    "bs" '(consult-buffer :which-key "go to buffer"))
-
-  (evil-define-key 'normal 'global (kbd "L") 'centaur-tabs-forward)
-  (evil-define-key 'normal 'global (kbd "H") 'centaur-tabs-backward)
+(evil-define-key 'normal 'global (kbd "L") 'centaur-tabs-forward)
+(evil-define-key 'normal 'global (kbd "H") 'centaur-tabs-backward)
 #+end_src
+
 ** org related binds
-#+begin_src elisp :tangle ~/.emacs.d/init.el
-
-  (zf/leader
-    "o" '(:ignore t :which-key "org")
-    "oh" '(consult-outline :which-key "go to heading"))
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+(zf/leader
+  "o" '(:ignore t :which-key "org")
+  "oc" '(visual-fill-column-mode :which-key "toggle centred")
+  "oh" '(consult-outline :which-key "go to heading"))
 #+end_src
 
-* programming
+** programming binds
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+(zf/leader
+  "l" '(:ignore t :which-key "lsp")
+  "lf" '(lsp-format-buffer :which-key "format")
+  "ld" '(lsp-ui-doc-glance :which-key "documentation"))
+#+end_src
+
+** wm emulation
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+(zf/leader
+  "t" '(:ignore t :which-key "terminal")
+  "to" '(vterm :which-key "open"))
+#+end_src
+
+* Programming
+** lsp-mode setup
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+(use-package lsp-mode
+  :config
+  (setq lsp-completion-provider :none
+        lsp-headerline-breadcrumb-enable nil
+        lsp-inlay-hint-enable t)
+  :hook ((lsp-mode . lsp-enable-which-key-integration)
+         (lsp-mode . (lambda ()
+                       (setf (alist-get 'styles (alist-get 'lsp-capf completion-category-defaults))
+                             '(orderless)))))
+  :commands (lsp lsp-deferred))
+
+(use-package lsp-ui
+  :hook (lsp-mode . lsp-ui-mode)
+  :bind (:map lsp-ui-mode-map
+              ("TAB" . lsp-ui-doc-focus-frame))
+  :config
+  (setq lsp-ui-doc-enable t
+        lsp-ui-doc-show-with-mouse t
+        lsp-ui-doc-position 'at-point))
+#+end_src
+
+** corfu setup
+completions
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+(use-package corfu 
+  :init (global-corfu-mode)
+  :hook (corfu-mode . corfu-popupinfo-mode)
+  :bind (:map corfu-map
+		          ("RET" . nil)
+		          ("C-j" . corfu-next)
+		          ("C-k" . corfu-previous))
+  :config
+  (setq lsp-completion-provider :none
+        completion-category-defaults nil))
+
+(add-hook 'org-mode-hook (lambda () (corfu-mode -1)))
+
+(setq corfu-auto t
+      corfu-cycle t
+      corfu-auto-delay 0 
+      corfu-auto-prefix 1
+      corfu-popupinfo-delay '(2.0 . 0.5))
+
+(use-package nerd-icons-corfu)
+(add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter)
+
+(use-package cape
+  :init
+  (add-to-list 'completion-at-point-functions #'cape-dabbrev)
+  (add-to-list 'completion-at-point-functions #'cape-abbrev)
+  (add-to-list 'completion-at-point-functions #'cape-elisp-block)
+  (add-to-list 'completion-at-point-functions #'cape-elisp-symbol)
+  (add-to-list 'completion-at-point-functions #'cape-keyword)
+  (add-to-list 'completion-at-point-functions #'cape-tex)
+  (add-to-list 'completion-at-point-functions #'cape-file))
+
+#+end_src
+
+** flycheck setup
+modern syntax checking
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+(use-package flycheck
+  :init (global-flycheck-mode))
+(with-eval-after-load 'flycheck
+  (setq-default flycheck-disabled-checkers '(org-lint)))
+#+end_src
+
+** general helpers setup
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+(use-package rainbow-delimiters
+  :hook (prog-mode . rainbow-delimiters-mode))
+#+end_src
+
+** haskell
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+(use-package lsp-haskell
+  :mode "\\.hs\\'"
+  :hook (haskell-mode-hook . lsp-haskell))
+(use-package haskell-mode
+  :mode "\\.hs\\'"
+  :hook (haskell-mode-hook . lsp-deferred))
+#+end_src
+
 ** elisp
-#+begin_src elisp :tangle ~/.emacs.d/init.el
-  ;;(use-package aggressive-indent)
-  ;;(add-hook 'emacs-lisp-mode-hook #'aggressive-indent-mode))
-  
-  ;;(use-package polymode
-  ;;  :ensure t
-  ;;  :config
-  ;;  (setq polymode-prefix-key (kbd "C-c n")))
-  ;;
-  ;;(use-package poly-org
-  ;;  :ensure t
-  ;;  :mode ("\\.org\\'" . poly-org-mode)
-  ;;  :config)
-  ;;(add-hook 'prog-mode-hook #'aggressive-indent-mode))
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+(use-package aggressive-indent
+  :hook (emacs-lisp-mode . aggressive-indent-mode))
+
+(use-package poly-org
+  :mode ("\\.org\\'" . poly-org-mode)
+  :config (setq org-src-preserve-indentation nil
+                org-src-content-indentation 0))
 #+end_src
 
-* visuals
-** misc
-#+begin_src elisp :tangle ~/.emacs.d/init.el
-  (use-package nerd-icons)
+** nix
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+(use-package nix-mode
+  :mode "\\.nix\\'"
+  :hook (nix-mode . lsp-deferred))
 
-  (use-package doom-themes
-    :config
-    (load-theme 'doom-sourcerer t)
-    ;;(doom-themes-neotree-config)
-    (doom-themes-org-config))
+(with-eval-after-load 'lsp-mode
+  (lsp-register-client
+   (make-lsp-client
+    :new-connection (lsp-stdio-connection "nixd")
+    :major-modes '(nix-mode)
+    :priority 0
+    :server-id 'nixd)))
 
-
-  (use-package solaire-mode
-    :config
-    (solaire-global-mode +1))
-  
-  (use-package centaur-tabs
-    :config
-    (centaur-tabs-mode t))
-
-  (add-to-list 'default-frame-alist '(undecorated . t))
-
+(setq lsp-nix-nixd-formatting-command ["alejandra"])
 #+end_src
+** markdown
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+(use-package markdown-mode)
+#+end_src
+
+** rust
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+(use-package rust-mode
+  :mode "\\.rs\\'"
+  :hook (rust-mode-hook . lsp-deferred))
+#+end_src
+
+** java
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+(use-package lsp-java
+  :mode "\\.java\\'"
+  :hook (java-mode-hook . lsp))
+#+end_src
+* Visuals
+** misc temp
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el 
+(use-package doom-themes
+  :defer t
+  :config
+  (setcdr (assoc 'gnus-group-news-low-empty doom-themes-base-faces)
+	        '(:inherit 'gnus-group-mail-1-empty :weight 'normal))
+  (doom-themes-neotree-config)
+  (doom-themes-org-config))
+
+(load-theme 'doom-tokyo-night t)
+
+(use-package solaire-mode
+  :config
+  (solaire-global-mode +1))
+
+(use-package centaur-tabs
+  :config
+  (centaur-tabs-mode t)
+  (add-to-list 'centaur-tabs-excluded-prefixes "*"))
+
+(add-to-list 'default-frame-alist '(undecorated . t))
+
+(use-package mini-echo
+  :init (mini-echo-mode))
+;;(use-package minibuffer-header)
+;;(use-package nano-modeline)
+;;(add-hook 'prog-mode-hook            #'nano-modeline-prog-mode)
+;;(add-hook 'text-mode-hook            #'nano-modeline-text-mode)
+;;(add-hook 'org-mode-hook             #'nano-modeline-org-mode)
+#+end_src
+
 ** fonts
-#+begin_src elisp :tangle ~/.emacs.d/init.el
-  (set-face-attribute 'default nil
-                      :font "Departure Mono"
-                      :weight 'normal
-                      :height 110)
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+(set-face-attribute 'default nil
+                    :font "Departure Mono"
+                    :weight 'normal
+                    :height 110)
 
-  ;; Set the fixed pitch face
-  (set-face-attribute 'fixed-pitch nil
-                      :font "Departure Mono"
-                      :weight 'normal
-                      :height 110)
+;; Set the fixed pitch face
+(set-face-attribute 'fixed-pitch nil
+                    :font "Departure Mono"
+                    :weight 'normal
+                    :height 110)
 
-  ;; Set the variable pitch face
-  (set-face-attribute 'variable-pitch nil
-                      :font "Departure Mono"
-                      :weight 'normal
-                      :height 110)
+;; Set the variable pitch face
+(set-face-attribute 'variable-pitch nil
+                    :font "Departure Mono"
+                    :weight 'normal
+                    :height 110)
 
-  (with-eval-after-load 'org-faces
-    (dolist (face '((org-level-1 . 1.2)
-		        (org-level-2 . 1.1)
-		        (org-level-3 . 1.05)
-		        (org-level-4 . 1.05)
-		        (org-level-5 . 1.05)
-		        (org-level-6 . 1.05)
-		        (org-level-7 . 1.05)
-		        (org-level-8 . 1.05)))
-                    (set-face-attribute (car face) nil
-              			  :font "Departure Mono"
-              			  :weight 'regular
-              			  :height (cdr face))))
+(with-eval-after-load 'org-faces
+  (dolist (face '((org-level-1 . 1.2)
+		              (org-level-2 . 1.1)
+		              (org-level-3 . 1.05)
+		              (org-level-4 . 1.05)
+		              (org-level-5 . 1.05)
+		              (org-level-6 . 1.05)
+		              (org-level-7 . 1.05)
+		              (org-level-8 . 1.05)))
+    (set-face-attribute (car face) nil
+              		:font "Departure Mono"
+              		:weight 'regular
+              		:height (cdr face))))
 
 
 #+end_src
-* pkms
+
+* PKMS
 ** org
-#+begin_src elisp :tangle ~/.emacs.d/init.el
-  (defun zf/org-mode-setup ()
-    (org-indent-mode)
-    (visual-line-mode 1)
-    (setq org-ellipsis "..."))
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+(setq org-element-use-cache nil)
+
+(defun zf/org-mode-setup ()
+  (org-indent-mode 1)
+  (visual-line-mode 1)
+  (setq org-ellipsis "..."))
 
 (add-hook 'org-mode-hook 'zf/org-mode-setup)
 
-(defun zf/org-mode-visual-fill ()
-  (setq visual-fill-column-width 100
-        visual-fill-column-center-text t)
-  (visual-fill-column-mode 1))
+(setq visual-fill-column-width 150
+      visual-fill-column-center-text t)
 
 (use-package visual-fill-column
-  :hook (org-mode . zf/org-mode-visual-fill))
+  :hook (org-mode . visual-fill-column-mode))
 #+end_src
 
-* academia
+
+* Academia
+
