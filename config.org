@@ -3,10 +3,14 @@
 #+STARTUP: show2levels indent
 
 tags
-- :BINDING:
-- :PKM:
-- :WM-APRXM:
-- :OS-APRXM:
+- :BINDING: contains key binding
+- :PKM: relevant to pkm
+- :WM: relevant to window(/frame/buffer) management
+- :OS: contains os-specific code
+- :VISUAL: affects the visuals
+- :EDITOR: relevant to editor experience
+- :FUTURE: to be updated / changed / implemented later
+- :HACK: is temp code
 
 * Core
 ** Header
@@ -37,10 +41,6 @@ tags
 
 (add-hook 'after-init-hook
           #'(lambda () (setq gc-cons-threshold (* 8 1024 1024))))
-
-(unless (package-installed-p 'esup)
-  (package-refresh-contents)
-  (package-install 'esup))
 #+end_src
 
 ** early-init
@@ -54,10 +54,11 @@ tags
           #'(lambda () (setq gc-cons-threshold (* 8 1024 1024))))
 #+end_src
 
-
 ** temporary fixes
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
 (setq vterm-shell "/etc/profiles/per-user/zayaanazam/bin/fish")
+
+(add-to-list 'load-path (expand-file-name "~/.emacs.d/infinite.el"))
 #+end_src
 ** osx-specific fixes
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
@@ -82,13 +83,15 @@ tags
               tab-always-indent 'complete
 	            tab-width 2)
 
-
 (menu-bar-mode -1)
 (tool-bar-mode -1)
 (scroll-bar-mode -1)
+(electric-indent-mode -1)
+(electric-pair-mode 1)
+(global-auto-revert-mode t)
 
 (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
-(blink-cursor-mode 1)
+(blink-cursor-mode -1)
 (setq-default tab-width 2)
 (unless (display-graphic-p)
   (xterm-mouse-mode 1))
@@ -98,11 +101,13 @@ tags
 ;; line numbers
 (global-display-line-numbers-mode t)
 (column-number-mode)
-  (setq display-line-numbers-type 'relative)
-  (add-hook 'vterm-mode-hook (lambda () (display-line-numbers-mode -1)))
+(setq display-line-numbers-type 'relative)
+(add-hook 'vterm-mode-hook (lambda () (display-line-numbers-mode -1)))
 
+(setq undo-limit 100000000)
 
 ;; backups
+(setq backup-by-copying t)
 (setq make-backup-files t)
 (setq backup-directory-alist `(("." . "~/.emacs.d/backups")))
 (setq auto-save-default t)
@@ -133,7 +138,7 @@ tags
 
 #+end_src
 
-** minibuffer
+** minibuffer :BINDING:
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
 (use-package vertico
   :bind
@@ -153,7 +158,11 @@ tags
 
 (use-package consult
   :config
-  (setq consult-preview-key nil))
+  (setq consult-preview-key nil)
+  (evil-define-key 'normal 'global (kbd "/") 'consult-line)
+  (consult-customize
+   consult-theme :preview-key 'any))
+
 
 ;; descriptors
 (use-package marginalia
@@ -162,21 +171,68 @@ tags
   :init (marginalia-mode))
 #+end_src
 
+** keybindings setup
+*** evil
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+(use-package evil
+  :init
+  (setq evil-want-integration t
+        evil-want-keybinding nil)
+  :config
+  (evil-global-set-key 'motion "j" 'evil-next-visual-line)
+  (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
+  (define-key evil-insert-state-map (kbd "C-k") nil)
+  (define-key evil-insert-state-map (kbd "C-j") nil)
+  (evil-set-initial-state 'vterm-mode 'insert)
+  (evil-mode))
+
+(add-hook 'prog-mode-hook #'hs-minor-mode)
+#+end_src
+
+*** which-key
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+(use-package which-key
+  :init (which-key-mode)
+  :config
+  (setq which-key-idle-delay 0.3))
+#+end_src
+
+*** general
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+(use-package general
+  :config
+  (general-create-definer zf/leader
+    :keymaps '(normal visual)
+    :prefix "SPC")
+  (zf/leader
+    "SPC" '(execute-extended-command :wk "M-x")))
+#+end_src
+
 ** fuzzy finding / grep
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
 (use-package affe)
-;; binds set keybinds>file browsing
+(zf/leader
+  "f"   '(:ignore t :which-key "file")
+  "ff"  '((lambda () (interactive) (affe-find "~/")) :which-key "fuzzy file ~/")
+  "fo"  '((lambda () (interactive) (affe-find "~/org/")) :which-key "fuzzy file ~/org/")
+  "f/"  '(affe-grep :which-key "fuzzy grep"))
 #+end_src
 
 ** file tree
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
-(use-package nerd-icons)
-(use-package neotree
-  :init
-  (setq neo-theme (if (display-graphic-p) 'nerd-icons 'ascii)))
-;;(neotree-dir "~/.emacs.d/"))
+(use-package nerd-icons) ;; TODO MOVE
 
-;; binds set keybinds>file browsing
+(use-package neotree
+  :config
+  (setq neo-theme 'ascii)
+  (evil-define-key 'normal neotree-mode-map (kbd "r") 'neotree-refresh)
+  (evil-define-key 'normal neotree-mode-map (kbd "TAB") 'neotree-enter)
+  (evil-define-key 'normal neotree-mode-map (kbd "RET") 'neotree-change-root)
+  (evil-define-key 'normal neotree-mode-map (kbd "A") 'neotree-stretch-toggle)
+  (evil-define-key 'normal neotree-mode-map (kbd "H") 'neotree-hidden-file-toggle)
+  (zf/leader
+    "ft" '(neotree-toggle :which-key "toggle tree")))
+
 #+end_src
 
 ** tab bar
@@ -197,13 +253,75 @@ tags
 (global-set-key (kbd "C-h x") #'helpful-command)
 #+end_src
 
+** action-at-point (embark) :FUTURE:
+right click context menu
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+;;(use-package embark
+;;  :bind ("C-." . embark-act))
+;;
+;;(use-package embark-consult)
+#+end_src
 * WM Emulation
-** window / buffer / workspace management
+** buffer management (workspaces)
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+(use-package perspective
+  :init (persp-mode)
+  :custom (persp-mode-prefix-key (kbd "C-c M-p"))
+  :config
+  (setq persp-state-default-file "~/.emacs.d/sessions"
+        persp-modestring-dividers '("| " " |" " : ")
+        persp-initial-frame-name "[1] org"
+        persp-suppress-no-prefix-key-warning t
+        desktop-save-mode nil)
+
+  (consult-customize consult-source-buffer :hidden t :default nil)
+  (add-to-list 'consult-buffer-sources persp-consult-source)
+
+  (zf/leader
+    "p" '(perspective-map :wk "perspective")))
+
+;; DONE modeline
+;; TODO centaur tabs interactions
+;; TODO auto close scratch buffer
+;; TODO saving/loading
+
+
+(add-hook 'after-init-hook #'persp-state-load)
+(add-hook 'kill-emacs-hook #'persp-state-save)
+
+#+end_src
+** window management
+https://karthinks.com/software/emacs-window-management-almanac/
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+
+(zf/leader
+  "w" '(:ignore t :wk "window")
+  "wq" '(delete-window :wk "quit")
+  "w|" '(evil-window-vsplit :wk "vsplit")
+  "w-" '(evil-window-split :wk "hsplit")
+  "wh" '(windmove-left :wk "focus left")
+  "wj" '(windmove-down :wk "focus down")
+  "wk" '(windmove-up :wk "focus up")
+  "wl" '(windmove-right :wk "focus right"))
+
+#+end_src
+
+** char-based decision tree
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+(use-package avy
+  :config
+  (evil-define-key 'normal 'global (kbd "f") 'evil-avy-goto-char))
+
+#+end_src
 
 ** terminal
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
 (use-package vterm
   :commands (vterm vterm-other-window))
+
+(zf/leader
+  "t" '(:ignore t :which-key "terminal")
+  "to" '(vterm :which-key "open"))
 #+end_src
 
 ** music
@@ -211,42 +329,6 @@ tags
 ** web browsing
 
 * keybindings
-** setup
-*** evil
-#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
-(use-package evil
-  :init
-  (setq evil-want-integration t
-        evil-want-keybinding nil)
-  :config
-  (evil-global-set-key 'motion "j" 'evil-next-visual-line)
-  (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
-  (define-key evil-insert-state-map (kbd "C-k") nil)
-  (define-key evil-insert-state-map (kbd "C-j") nil)
-  (evil-set-initial-state 'vterm-mode 'insert)
-  (evil-mode))
-
-(add-hook 'prog-mode-hook #'hs-minor-mode)
-
-#+end_src
-
-*** which-key
-#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
-(use-package which-key
-  :init (which-key-mode)
-  :config
-  (setq which-key-idle-delay 0.3))
-#+end_src
-
-*** general
-#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
-(use-package general
-  :config
-  (general-create-definer zf/leader
-    :keymaps '(normal visual)
-    :prefix "SPC"))
-#+end_src
-
 ** emacs-specific binds
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
 (defun zf/reload-config ()
@@ -267,34 +349,14 @@ tags
   "eq" '(save-buffers-kill-emacs :which-key "quit emacs")
   "er" '(zf/reload-config :which-key "reload config"))
 
-(evil-define-key 'normal 'global (kbd "TAB") 'evil-toggle-fold)
-#+end_src
-
-** file related binds
-#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
-(zf/leader
-  "f" '(:ignore t :which-key "file")
-  "ff" '((lambda () (interactive) (affe-find "~/")) :which-key "fuzzy file ~/")
-  "fo" '((lambda () (interactive) (affe-find "~/org/")) :which-key "fuzzy file ~/org/")
-  "f/" '(affe-grep :which-key "fuzzy grep")
-  "ft" '(:ignore t :which-key "tree")
-  "ftt" '(neotree-toggle :which-key "toggle")
-  "ftf" '(neotree-next-line :which-key "focus"))
-
-(evil-define-key 'normal 'global (kbd "/") 'consult-line)
-
-(evil-define-key 'normal neotree-mode-map (kbd "r") 'neotree-refresh)
-(evil-define-key 'normal neotree-mode-map (kbd "RET") 'neotree-enter)
-(evil-define-key 'normal neotree-mode-map (kbd "O") 'neotree-change-root)
-(evil-define-key 'normal neotree-mode-map (kbd "A") 'neotree-stretch-toggle)
-(evil-define-key 'normal neotree-mode-map (kbd "H") 'neotree-hidden-file-toggle)
+(evil-define-key '(normal visual insert) 'global (kbd "TAB") 'evil-toggle-fold)
 #+end_src
 
 ** buffer management binds
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
 (zf/leader
   "b" '(:ignore t :which-key "buffer")
-  "bq" '(image-kill-buffer :which-key "kill current")
+  "bq" '(quit-window-kill-buffer :which-key "kill current")
   "bs" '(consult-buffer :which-key "go to buffer"))
 
 (evil-define-key 'normal 'global (kbd "L") 'centaur-tabs-forward)
@@ -315,13 +377,6 @@ tags
   "l" '(:ignore t :which-key "lsp")
   "lf" '(lsp-format-buffer :which-key "format")
   "ld" '(lsp-ui-doc-glance :which-key "documentation"))
-#+end_src
-
-** wm emulation
-#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
-(zf/leader
-  "t" '(:ignore t :which-key "terminal")
-  "to" '(vterm :which-key "open"))
 #+end_src
 
 * Programming
@@ -463,10 +518,10 @@ modern syntax checking
   :config
   (setcdr (assoc 'gnus-group-news-low-empty doom-themes-base-faces)
 	        '(:inherit 'gnus-group-mail-1-empty :weight 'normal))
-  (doom-themes-neotree-config)
+  ;;(doom-themes-neotree-config)
   (doom-themes-org-config))
 
-(load-theme 'doom-tokyo-night t)
+(load-theme 'doom-wilmersdorf t)
 
 (use-package solaire-mode
   :config
@@ -474,18 +529,28 @@ modern syntax checking
 
 (use-package centaur-tabs
   :config
-  (centaur-tabs-mode t)
-  (add-to-list 'centaur-tabs-excluded-prefixes "*"))
+  (add-to-list 'centaur-tabs-excluded-prefixes "*")
+  (setq centaur-tabs-height 20
+        centaur-tabs-set-icons t
+        centaur-tabs-plain-icons t
+        centaur-tabs-icon-type 'nerd-icons
+        centaur-tabs-set-modified-marker t
+        centaur-tabs-cycle-scope 'tabs
+        centaur-tabs-modified-marker "*")
+  (centaur-tabs-mode 1))
 
 (add-to-list 'default-frame-alist '(undecorated . t))
 
-(use-package mini-echo
-  :init (mini-echo-mode))
-;;(use-package minibuffer-header)
-;;(use-package nano-modeline)
-;;(add-hook 'prog-mode-hook            #'nano-modeline-prog-mode)
-;;(add-hook 'text-mode-hook            #'nano-modeline-text-mode)
-;;(add-hook 'org-mode-hook             #'nano-modeline-org-mode)
+(use-package beacon
+  :config
+  (setq beacon-blink-when-point-moves-vertically 5
+        beacon-blink-when-focused t
+        beacon-blink-when-window-changes t
+        beacon-blink-when-buffer-changes t
+        beacon-size 20
+        beacon-blink-delay 0.25
+        beacon-blink-duration 0.25)
+  (beacon-mode))
 #+end_src
 
 ** fonts
@@ -541,6 +606,10 @@ modern syntax checking
 
 (use-package visual-fill-column
   :hook (org-mode . visual-fill-column-mode))
+
+(use-package hl-todo
+  :demand t
+  :init (global-hl-todo-mode))
 #+end_src
 
 
