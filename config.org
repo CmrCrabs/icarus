@@ -1,4 +1,4 @@
-#+TITLE: emacs literate configuration
++TITLE: emacs literate configuration
 #+AUTHOR: Zayaan F. Azam
 #+STARTUP: show3levels indent
 
@@ -12,7 +12,7 @@ tags
 - :FUTURE: yet to be properly implemented
 - :HACK: bad solution, temp code
 - :OTHER: tangles to a different file
-- defer, hook, mode?
+- defer, hook, mode? , contains custom function?
 
 * Foreword
 ** bootstrapping
@@ -26,6 +26,8 @@ emacs -Q --batch --eval "(progn (require 'ob-tangle) (with-current-buffer (find-
 - phundrak
 - efs (systemcrafters)
 - distrotube
+** future todos
+- [ ] update SPC f/ to match only pkm
 * Pre-Core (rename)
 adjusting emacs-isms
 ** Header :OTHER:
@@ -230,11 +232,13 @@ for automatic cleanup
 ** fuzzy finding / grep
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
 (use-package affe)
+
 (zf/leader
   "f"   '(:ignore t :which-key "file")
-  "ff"  '((lambda () (interactive) (affe-find "~/")) :which-key "fuzzy file ~/")
-  "fo"  '((lambda () (interactive) (affe-find "~/org/")) :which-key "fuzzy file ~/org/")
-  "f/"  '(affe-grep :which-key "fuzzy grep"))
+  "ff"  '((lambda () (interactive) (affe-find "~/")) :which-key "fuzzy find ~/")
+  "fo"  '((lambda () (interactive) (affe-find "~/org/")) :which-key "fuzzy find ~/org/")
+  "f/"  '((lambda () (interactive) (affe-grep "~/")) :which-key "fuzzy grep ~/"))
+
 #+end_src
 
 ** file tree
@@ -256,9 +260,10 @@ for automatic cleanup
 
 ** helpful (debugging) (inbuilt docs)
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
-
 (use-package helpful
-  :commands (helpful-callable helpful-variable helpful-key helpful-command))
+  :commands (helpful-callable helpful-variable helpful-key helpful-command)
+  :config
+  (setq help-window-select t))
 
 ;; outside of use-package so loaded ontime
 (zf/leader
@@ -269,10 +274,10 @@ for automatic cleanup
   "hx" '(helpful-command :wk "command"))
 #+end_src
 
-
 * Object Manipulation
 moving/focusing/changing the {cursor, buffer, windows}
-** buffer: tab bar :BINDING:HACK:
+** buffers
+*** tab bar :BINDING:HACK:
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
 (use-package centaur-tabs
   :config
@@ -297,7 +302,7 @@ moving/focusing/changing the {cursor, buffer, windows}
       (list "all"))))
 #+end_src
 
-** buffer: workspaces(/perspectives) :BINDING:HACK:
+*** perspectives :BINDING:HACK:FUTURE:
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
 (use-package perspective
   :custom (persp-mode-prefix-key (kbd "C-c M-p")) ;; to suppress warning
@@ -305,6 +310,7 @@ moving/focusing/changing the {cursor, buffer, windows}
   (setq persp-state-default-file "~/.emacs.d/sessions"
         persp-modestring-dividers '("| " " |" " : ")
         persp-initial-frame-name "[1] Main"
+        ;;persp-purge-initial-persp-on-save-exception '(".*")
         persp-suppress-no-prefix-key-warning t
         desktop-save-mode nil)
 
@@ -327,16 +333,11 @@ moving/focusing/changing the {cursor, buffer, windows}
 
   (persp-mode))
 
-;;(with-eval-after-load 'perspective
-;;  (defun zf/persp-save-polymode (buf)
-;;    "strips [..] suffix from polymode bufs"
-;;    )
-;;  (defun )
-;;  )
+;; FUTURE auto save/load vterms
+;; FUTURE fix poly org mdoe / have default setup
 
-;; TODO add save/load buf functions for *vterm* and general *whaever*
 #+end_src
-** windows
+** windows :BINDING:
 https://karthinks.com/software/emacs-window-management-almanac/
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
 (defun zf/fn-input (f)
@@ -363,7 +364,8 @@ https://karthinks.com/software/emacs-window-management-almanac/
   "wrv" (list (zf/fn-input #'enlarge-window) :wk "vertical"))
 #+end_src
 
-** cursor: char-based decision tree
+** cursor
+*** char-based decision tree :BINDING:UX:
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
 (use-package avy
   :config
@@ -372,19 +374,34 @@ https://karthinks.com/software/emacs-window-management-almanac/
 #+end_src
 
 * Ouroborousification :FUTURE:
-** terminal :HACK:OS:
+** terminal :BINDING:HACK:OS:
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
 (use-package vterm
   :commands (vterm vterm-other-window)
   :config
-  (evil-set-initial-state 'vterm-mode 'normal))
+  (evil-set-initial-state 'vterm-mode 'normal)
+  (setq vterm-shell "/etc/profiles/per-user/zayaanazam/bin/fish"))
 
+(use-package multi-vterm
+  :commands (multi-vterm))
+
+;; outside of use package for proper load timing
+(setq multi-vterm-buffer-name "vt")
 (zf/leader
   "t" '(:ignore t :which-key "terminal")
-  "to" '(vterm :which-key "open")
-  "ts" '(vterm-other-window :which-key "open to side"))
-
-(setq vterm-shell "/etc/profiles/per-user/zayaanazam/bin/fish")
+  "to" '(multi-vterm :which-key "open")
+  "ts" '((lambda ()
+           (interactive)
+           (evil-window-vsplit)
+           (windmove-right)
+           (multi-vterm))
+         :which-key "open to side (right)")
+  "tb" '((lambda ()
+           (interactive)
+           (evil-window-split)
+           (windmove-down)
+           (multi-vterm))
+         :which-key "open below"))
 #+end_src
 
 ** music :FUTURE:
@@ -422,6 +439,7 @@ https://karthinks.com/software/emacs-window-management-almanac/
 (zf/leader
   "b" '(:ignore t :which-key "buffer")
   "bq" '(image-kill-buffer :which-key "kill current")
+  "bk" '(kill-buffer :which-key "kill (search)")
   "bs" '(switch-to-buffer :which-key "search"))
 
 (evil-define-key 'normal 'global (kbd "L") 'centaur-tabs-forward)
@@ -536,9 +554,12 @@ modern syntax checking
   :hook (emacs-lisp-mode . aggressive-indent-mode))
 
 (use-package poly-org
-  :mode ("\\.org\\'" . poly-org-mode)
-  :config (setq org-src-preserve-indentation nil
-                org-src-content-indentation 0))
+  :after org
+  :config
+  (setq org-src-preserve-indentation nil
+        org-src-content-indentation 0)
+  (poly-org-mode 1))
+;;(add-hook 'org-mode-hook #'poly-org-mode)) ;; do not use :hook, to prevent it from reenabling when manually disabled
 #+end_src
 
 ** nix
@@ -623,9 +644,11 @@ modern syntax checking
 #+end_src
 ** colour helpers
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
-(use-package colorful-mode
-  :config
-  (global-colorful-mode))
+;;(use-package colorful-mode
+;;  :config
+;;  (global-colorful-mode))
+(use-package rainbow-mode
+  :hook org-mode prog-mode)
 ;; TODO add keybinds for color helpers
 ;; TODO enable in all modes, update stylings, enable for different color formats
 #+end_src
