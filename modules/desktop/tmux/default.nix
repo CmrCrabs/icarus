@@ -4,7 +4,7 @@
 
   config = lib.mkIf config.tmux.enable {
     home.packages = [
-      inputs.self.packages.${pkgs.system}.tmux
+      inputs.self.packages.${pkgs.stdenv.hostPlatform.system}.tmux
     ];
   };
 }

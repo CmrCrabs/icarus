@@ -23,7 +23,7 @@ in {
           format = "[${pad.right}   ](bg:green fg:black)";
         };
         directory = {
-          format = " [ $path ](bg:red fg:white)[${pad.right} ](bg:white fg:red)";
+          format = " [ $path ](bg:red fg:white)[${pad.right} -- ](bg:white fg:red)";
           truncation_length = 6;
           truncation_symbol = ".../";
         };

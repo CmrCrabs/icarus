@@ -24,6 +24,7 @@
       "libtool"
     ];
     casks = [
+      "audacity"
       "kicad"
       "discord"
       "flux-app"

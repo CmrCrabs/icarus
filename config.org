@@ -1,48 +1,39 @@
 +TITLE: emacs literate configuration
 #+AUTHOR: Zayaan F. Azam
 #+STARTUP: show3levels indent
+#+TAGS:
 
-tags
-- :BINDING: contains key binding
-- :PKM: relevant to pkm
-- :WM: relevant to window(/frame/buffer) management
-- :OS: contains os-specific code
-- :VISUAL: affects the visuals
-- :EDITOR:UX: relevant to editor experience
-- :FUTURE: yet to be properly implemented
+* Forewords
+** Tags
+- :BINDING: key binding
+- :OS: os-specific code
+- :UX: editor experience
+- :UI: visuals, "pragmatic"
 - :HACK: bad solution, temp code
 - :OTHER: tangles to a different file
-- defer, hook, mode? , contains custom function?
-
-* Foreword
-** bootstrapping
-#+begin_src bash
-emacs -Q --batch --eval "(progn (require 'ob-tangle) (with-current-buffer (find-file-noselect \"~/.emacs.d/config.org\") (org-babel-tangle)) (load-file \"~/.emacs.d/init.el\"))"
-#+end_src
+- :MODE: adds a major/minor mode
+- :HOOK: adds a hook
+- :FUTURE: more to be implemented
+- :UNFINISHED: unfinished section
 
 ** Credits
-- rougier
-- doom emacs (hlissner)
-- phundrak
-- efs (systemcrafters)
-- distrotube
-** future todos
-- [ ] update SPC f/ to match only pkm
-* Pre-Core (rename)
-adjusting emacs-isms
-** Header :OTHER:
+- Nicolas Rougier : https://github.com/rougier/dotemacs/
+- Henrik Lissner  : https://github.com/doomemacs/doomemacs
+- SystemCrafters  : https://www.youtube.com/playlist?list=PLEoMzSkcN8oPH1au7H6B7bBJ4ZO7BXjSZ
+* Adjusting Emacs-isms
+** Headers :OTHER:
 to suppress emacs-30 warnings
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
 ;;; -*- lexical-binding: t -*-
 #+end_src
+
 #+begin_src emacs-lisp :tangle ~/.emacs.d/early-init.el
 ;;; -*- lexical-binding: t -*-
 #+end_src
 
 ** Optimisations
-*** startup performance
+*** startup performance :HOOK:
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
-
 (defun efs/display-startup-time ()
   (message "Emacs loaded in %s with %d garbage collections."
            (format "%.2f seconds"
@@ -51,75 +42,58 @@ to suppress emacs-30 warnings
            gcs-done))
 
 (add-hook 'emacs-startup-hook #'efs/display-startup-time)
-
-(setq
- site-run-file nil
- inhibit-default-init t
- gc-cons-threshold most-positive-fixnum)
-
-(add-hook 'after-init-hook
-          #'(lambda () (setq gc-cons-threshold (* 8 1024 1024))))
 #+end_src
-
-*** garbage collection :OTHER:
+*** garbage collection :OTHER:HOOK:
 #+begin_src emacs-lisp :tangle ~/.emacs.d/early-init.el
-(setq
- site-run-file nil
- inhibit-default-init t
- gc-cons-threshold most-positive-fixnum)
+(setq site-run-file nil
+      inhibit-default-init t
+      gc-cons-threshold most-positive-fixnum)
 
 (add-hook 'after-init-hook
           #'(lambda () (setq gc-cons-threshold (* 8 1024 1024))))
 #+end_src
 
-** Fixing path :OS:
-#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
-(use-package exec-path-from-shell
-  :init
-  (when (memq window-system '(mac ns x))
-    (exec-path-from-shell-initialize))
-  (when (daemonp)
-    (exec-path-from-shell-initialize)))
+** Default UI Tweaks :UI:OTHER:
+#+begin_src emacs-lisp :tangle ~/.emacs.d/early-init.el
+;; Removing UI
+(menu-bar-mode -1)
+(tool-bar-mode -1)
+(scroll-bar-mode -1)
+(add-to-list 'default-frame-alist '(undecorated . t))
 #+end_src
 
-** Sane defaults
+** Sane Defaults :BINDING:EDITOR:UX:MODE:
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
 (setq-default
  inhibit-startup-screen t
  inhibit-startup-message t
  inhibit-startup-echo-area-message t
  initial-scratch-message ""
- initial-buffer-choice t)
+ initial-buffer-choice t
+ indent-tabs-mode nil
+ tab-always-indent 'complete
+ tab-width 2
+ undo-limit 100000000)
 
-(setq-default indent-tabs-mode nil
-              tab-always-indent 'complete
-	            tab-width 2)
 
-(fset 'yes-or-no-p 'y-or-n-p)
-(menu-bar-mode -1)
-(tool-bar-mode -1)
-(scroll-bar-mode -1)
-(electric-indent-mode -1)
+;; Editor
+(electric-indent-mode 1)
 (electric-pair-mode 1)
-(global-auto-revert-mode t)
-
+(global-unset-key (kbd "M-z")) ;; never used, accidental press bad
 (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
+(global-auto-revert-mode t)
+(fset 'yes-or-no-p 'y-or-n-p)
 (blink-cursor-mode -1)
-(setq-default tab-width 2)
 (unless (display-graphic-p)
   (xterm-mouse-mode 1))
 
-(global-unset-key (kbd "M-z"))
 
-;; line numbers
+;; Line Numbers
 (global-display-line-numbers-mode t)
 (column-number-mode)
 (setq display-line-numbers-type 'relative)
-(add-hook 'vterm-mode-hook (lambda () (display-line-numbers-mode -1)))
 
-(setq undo-limit 100000000)
-
-;; backups
+;; Backups
 (setq backup-by-copying t)
 (setq make-backup-files t)
 (setq backup-directory-alist `(("." . "~/.emacs.d/backups")))
@@ -128,8 +102,7 @@ to suppress emacs-30 warnings
 #+end_src
 
 * Core
-(is) fundamental to usage
-** Package manager
+** Package Manager
 *** use-package setup
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
 (require 'package)
@@ -139,26 +112,36 @@ to suppress emacs-30 warnings
 			                   ("elpa" . "https://elpa.gnu.org/packages/")))
 (package-initialize)
 
-(setq use-package-always-ensure t
-      use-package-compute-statistics t)
 
 ;; bootstrap
 (unless (package-installed-p 'use-package)
   (package-refresh-contents)
   (package-install 'use-package))
-
 (unless package-archive-contents
   (package-refresh-contents))
 
 (require 'use-package)
 
+(setq use-package-always-ensure t
+      use-package-compute-statistics t)
 #+end_src
 *** package-list :FUTURE:
 for automatic cleanup
-** Keybinding setup
-*** evil :BINDING:UX:
+*** diminish :MODE:
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+(use-package diminish
+  :config
+  (diminish 'hs-minor-mode)
+  (diminish 'visual-line-mode)
+  (diminish 'org-indent-mode)
+  (diminish 'eldoc-mode))
+#+end_src
+
+** Keybinding Implements
+*** evil :BINDING:UX:HOOK:
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
 (use-package evil
+  :diminish evil-mode
   :init
   (setq evil-want-integration t
         evil-want-keybinding nil)
@@ -172,15 +155,16 @@ for automatic cleanup
 (add-hook 'prog-mode-hook #'hs-minor-mode)
 #+end_src
 
-*** which-key :BINDING:UX:
+*** which-key :BINDING:UX:HOOK:
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
 (use-package which-key
+  :diminish which-key-mode
   :init (which-key-mode)
   :config
-  (setq which-key-idle-delay 0.3
+  (setq which-key-idle-delay 0.0
         which-key-add-column-padding 3
         which-key-max-display-columns 4))
-(add-hook 'which-key-init-buffer-hook #'centaur-tabs-local-mode)
+(add-hook 'which-key-init-buffer-hook #'centaur-tabs-local-mode) ;; outside of use package for timing
 #+end_src
 
 *** general :BINDING:UX:
@@ -198,19 +182,21 @@ for automatic cleanup
               :wk "eval")))
 #+end_src
 
-** minibuffer :BINDING:UX:
+** Minibuffer :BINDING:UX:MODE:
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+;; completion ui framework
 (use-package vertico
-  :bind
-  (:map vertico-map
-        ("C-j" . vertico-next)
-        ("C-k" . vertico-previous)
-        ("C-h" . vertico-grid-left)
-        ("C-l" . vertico-grid-right))
+  :diminish vertico-mode
+  :bind (:map vertico-map
+              ("C-j" . vertico-next)
+              ("C-k" . vertico-previous)
+              ("C-h" . vertico-grid-left)
+              ("C-l" . vertico-grid-right))
   :init
   (vertico-mode)
   (vertico-mouse-mode 1))
 
+;; fuzzy matching
 (use-package orderless
   :custom
   (completion-styles '(orderless basic))
@@ -224,41 +210,13 @@ for automatic cleanup
 
 ;; descriptors
 (use-package marginalia
+  :diminish marginalia-mode
   :bind (:map minibuffer-local-map
 	            ("M-A" . marginalia-cycle))
   :init (marginalia-mode))
 #+end_src
 
-** fuzzy finding / grep
-#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
-(use-package affe)
-
-(zf/leader
-  "f"   '(:ignore t :which-key "file")
-  "ff"  '((lambda () (interactive) (affe-find "~/")) :which-key "fuzzy find ~/")
-  "fo"  '((lambda () (interactive) (affe-find "~/org/")) :which-key "fuzzy find ~/org/")
-  "f/"  '((lambda () (interactive) (affe-grep "~/")) :which-key "fuzzy grep ~/"))
-
-#+end_src
-
-** file tree
-#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
-(use-package nerd-icons) ;; TODO MOVE
-
-(use-package neotree
-  :config
-  (setq neo-theme 'ascii)
-  (evil-define-key 'normal neotree-mode-map (kbd "r") 'neotree-refresh)
-  (evil-define-key 'normal neotree-mode-map (kbd "TAB") 'neotree-enter)
-  (evil-define-key 'normal neotree-mode-map (kbd "RET") 'neotree-change-root)
-  (evil-define-key 'normal neotree-mode-map (kbd "A") 'neotree-stretch-toggle)
-  (evil-define-key 'normal neotree-mode-map (kbd "H") 'neotree-hidden-file-toggle)
-  (zf/leader
-    "ft" '(neotree-toggle :which-key "toggle tree")))
-
-#+end_src
-
-** helpful (debugging) (inbuilt docs)
+** Documentation :BINDING:UX:UI:
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
 (use-package helpful
   :commands (helpful-callable helpful-variable helpful-key helpful-command)
@@ -273,21 +231,67 @@ for automatic cleanup
   "hk" '(helpful-key :wk "keybind")
   "hx" '(helpful-command :wk "command"))
 #+end_src
+** Meta :BINDING:UX:
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+(defun zf/reload-config ()
+  "Reload config."
+  (interactive)
+  (org-babel-tangle-file "~/.emacs.d/config.org")
+  (load-file "~/.emacs.d/init.el"))
 
+(defun zf/open-config ()
+  "Open config."
+  (interactive)
+  (find-file "~/.emacs.d/config.org"))
+
+(zf/leader
+  "e" '(:ignore t :which-key "emacs")
+  "ec" '(zf/open-config :which-key "open config")
+  "er" '(zf/reload-config :which-key "reload config")
+  "et" '(consult-theme :which-key "select theme")
+  "ek" '(save-buffers-kill-emacs :which-key "kill emacs"))
+(evil-define-key '(normal visual) 'global (kbd "TAB") 'evil-toggle-fold)
+#+end_src
+
+** Updating PATH :OS:
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+(use-package exec-path-from-shell
+  :defer t
+  :init
+  (when (memq window-system '(mac ns x))
+    (exec-path-from-shell-initialize))
+  (when (daemonp)
+    (exec-path-from-shell-initialize)))
+#+end_src
+** DIR management :OS:UX:BINDING:
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+(zf/leader
+  "d" '(:ignore t :wk "directory")
+  "d c" '(cd :wk "change"))
+#+end_src
 * Object Manipulation
-moving/focusing/changing the {cursor, buffer, windows}
-** buffers
-*** tab bar :BINDING:HACK:
+** Buffers
+*** tab bar :BINDING:HACK:MODE:
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
 (use-package centaur-tabs
+  :diminish centaur-tabs-mode
+  :hook (after-init-hook . centaur-tabs-mode)
   :config
-  (centaur-tabs-mode t)
-  (add-to-list 'centaur-tabs-excluded-prefixes "*"))
+  (add-to-list 'centaur-tabs-excluded-prefixes "*")
+  (evil-define-key 'normal 'global (kbd "L") 'centaur-tabs-forward)
+  (evil-define-key 'normal 'global (kbd "H") 'centaur-tabs-backward)
+  (setq centaur-tabs-height 20
+        centaur-tabs-set-icons t
+        centaur-tabs-plain-icons t
+        centaur-tabs-icon-type 'nerd-icons
+        centaur-tabs-set-modified-marker t
+        centaur-tabs-cycle-scope 'tabs
+        centaur-tabs-modified-marker "*"))
 
 (with-eval-after-load 'centaur-tabs
   (with-eval-after-load 'perspective
     (defun +tabs-buffer-list ()
-      "overriding default buffer list to only include current perspective's buffers"
+      "Overriding default buffer list to only include current perspective's buffers."
       (seq-filter
        (lambda (b)
          (and (buffer-live-p b)
@@ -298,20 +302,20 @@ moving/focusing/changing the {cursor, buffer, windows}
     (setq centaur-tabs-buffer-list-function #'+tabs-buffer-list)
 
     (defun centaur-tabs-buffer-groups ()
-      "overrriding default buffer group to prevent any filetype/context grouping"
+      "Overrriding default buffer group to prevent any filetype/context grouping."
       (list "all"))))
 #+end_src
 
-*** perspectives :BINDING:HACK:FUTURE:
+*** perspectives :BINDING:HACK:HOOK:MODE:FUTURE:
+FUTURE: auto saveload vterm, fix poly-org mode, programatically ensure named perspectives
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
 (use-package perspective
-  :custom (persp-mode-prefix-key (kbd "C-c M-p")) ;; to suppress warning
+  :diminish persp-mode
   :config
   (setq persp-state-default-file "~/.emacs.d/sessions"
-        persp-modestring-dividers '("| " " |" " : ")
-        persp-initial-frame-name "[1] Main"
-        ;;persp-purge-initial-persp-on-save-exception '(".*")
-        persp-suppress-no-prefix-key-warning t
+        persp-modestring-dividers '("     | " " |" " : ")
+        persp-initial-frame-name "[1] main"
+        persp-mode-prefix-key (kbd "C-c M-p")
         desktop-save-mode nil)
 
   (zf/leader
@@ -328,19 +332,31 @@ moving/focusing/changing the {cursor, buffer, windows}
     "TAB 4" '((lambda () (interactive)(persp-switch-by-number 4)) :wk "goto 4")
     "TAB 5" '((lambda () (interactive)(persp-switch-by-number 5)) :wk "goto 5"))
 
-  (add-hook 'after-init-hook  #'(lambda () (persp-state-load persp-state-default-file)))
+  ;; ugly fix for persp-state-load slow
+  (add-hook 'emacs-startup-hook
+            (lambda ()
+              (run-with-idle-timer 0.2 nil #'persp-state-load
+                                   persp-state-default-file)))
+
   (add-hook 'kill-emacs-hook  #'(lambda () (persp-state-save persp-state-default-file)))
-
   (persp-mode))
-
-;; FUTURE auto save/load vterms
-;; FUTURE fix poly org mdoe / have default setup
-
 #+end_src
-** windows :BINDING:
-https://karthinks.com/software/emacs-window-management-almanac/
+
+*** misc binds :BINDING:
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+(zf/leader
+  "b" '(:ignore t :which-key "buffer")
+  "bq" '(image-kill-buffer :which-key "kill current")
+  "bk" '(kill-buffer :which-key "kill (search)")
+  "bs" '(switch-to-buffer :which-key "search"))
+#+end_src
+
+** Windows
+*** movement, focus, resize :BINDING:
+ref: https://karthinks.com/software/emacs-window-management-almanac/
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
 (defun zf/fn-input (f)
+  "Calls function 'F' and take input."
   (lambda (x)
     (interactive "xx:")
     (funcall f x)))
@@ -348,7 +364,6 @@ https://karthinks.com/software/emacs-window-management-almanac/
 (zf/leader
   "w" '(:ignore t :wk "window")
   "wq" '(kill-buffer-and-window :wk "kill & quit")
-  "wc" '(delete-window :wk "kill & quit")
   "w|" '(evil-window-vsplit :wk "vsplit")
   "w-" '(evil-window-split :wk "hsplit")
   "wh" '(windmove-left :wk "focus left")
@@ -359,34 +374,71 @@ https://karthinks.com/software/emacs-window-management-almanac/
   "wJ" '(windmove-swap-states-down :wk "move down")
   "wK" '(windmove-swap-states-up :wk "move up")
   "wL" '(windmove-swap-states-right :wk "move right")
+  "wc" '(ace-delete-window :wk "close window")
+  "wa" '(ace-window :wk "ace window")
   "wr" '(:ignore t :wk "resize")
   "wrh" (list (zf/fn-input #'enlarge-window-horizontally) :wk "horizontal")
   "wrv" (list (zf/fn-input #'enlarge-window) :wk "vertical"))
 #+end_src
 
-** cursor
+** Cursor
 *** char-based decision tree :BINDING:UX:
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
 (use-package avy
   :config
-  (evil-define-key 'normal 'global (kbd "f") 'evil-avy-goto-char-2))
+  (evil-define-key 'normal 'global (kbd "f") 'evil-avy-goto-char-timer)
+  (setq avy-timeout-seconds 0.2))
+#+end_src
 
+** Frames :BINDING:
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+(zf/leader
+  "F" '(:ignore t :wk "frame")
+  "Fq"'(delete-frame :wk "quit"))
 #+end_src
 
 * Ouroborousification :FUTURE:
-** terminal :BINDING:HACK:OS:
+** Files
+*** fuzzy :BINDING:FUTURE:
+FUTURE: change grep target
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+(use-package affe
+  :config (zf/leader
+            "f"   '(:ignore t :which-key "file")
+            "ff"  '(affe-find :which-key "fuzzy find ~/")
+            "f/"  '(affe-grep :which-key "fuzzy grep ~/")))
+#+end_src
+*** tree :BINDING:UI:MODE:
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+(use-package neotree
+  :diminish neotree-mode
+  :config
+  (setq neo-theme 'ascii)
+  (evil-define-key 'normal neotree-mode-map
+    (kbd "r") 'neotree-refresh
+    (kbd "TAB") 'neotree-enter
+    (kbd "RET") 'neotree-change-root
+    (kbd "A") 'neotree-stretch-toggle
+    (kbd "H") 'neotree-hidden-file-toggle)
+  (zf/leader
+    "ft" '(neotree-toggle :which-key "toggle tree")))
+#+end_src
+
+** Terminal :BINDING:HACK:OS:HOOK:MODE:
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
 (use-package vterm
+  :diminish vterm-mode
   :commands (vterm vterm-other-window)
   :config
   (evil-set-initial-state 'vterm-mode 'normal)
-  (setq vterm-shell "/etc/profiles/per-user/zayaanazam/bin/fish"))
+  (setq vterm-shell "/etc/profiles/per-user/zayaanazam/bin/fish")
+  (add-hook 'vterm-mode-hook (lambda () (display-line-numbers-mode -1))))
 
 (use-package multi-vterm
-  :commands (multi-vterm))
+  :commands (multi-vterm)
+  :custom (multi-vterm-buffer-name "vt"))
 
-;; outside of use package for proper load timing
-(setq multi-vterm-buffer-name "vt")
+;; outside of use package for lazy loading
 (zf/leader
   "t" '(:ignore t :which-key "terminal")
   "to" '(multi-vterm :which-key "open")
@@ -404,113 +456,60 @@ https://karthinks.com/software/emacs-window-management-almanac/
          :which-key "open below"))
 #+end_src
 
-** music :FUTURE:
+** Music :FUTURE:
 
-** web browsing :FUTURE:
-
-** file explorer :FUTURE:
-
-* keybindings
-** emacs-specific binds
-#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
-(defun zf/reload-config ()
-  "Reload config."
-  (interactive)
-  (org-babel-tangle-file "~/.emacs.d/config.org")
-  (load-file "~/.emacs.d/init.el"))
-
-(defun zf/open-config ()
-  "Open config."
-  (interactive)
-  (find-file "~/.emacs.d/config.org"))
-
-(zf/leader
-  "e" '(:ignore t :which-key "emacs")
-  "ec" '(zf/open-config :which-key "open config")
-  "et" '(consult-theme :which-key "select theme")
-  "eq" '(save-buffers-kill-emacs :which-key "quit emacs")
-  "er" '(zf/reload-config :which-key "reload config"))
-
-(evil-define-key '(normal visual) 'global (kbd "TAB") 'evil-toggle-fold)
-#+end_src
-
-** buffer management binds
-#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
-(zf/leader
-  "b" '(:ignore t :which-key "buffer")
-  "bq" '(image-kill-buffer :which-key "kill current")
-  "bk" '(kill-buffer :which-key "kill (search)")
-  "bs" '(switch-to-buffer :which-key "search"))
-
-(evil-define-key 'normal 'global (kbd "L") 'centaur-tabs-forward)
-(evil-define-key 'normal 'global (kbd "H") 'centaur-tabs-backward)
-#+end_src
-
-** org related binds
-#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
-(zf/leader
-  "o" '(:ignore t :which-key "org")
-  "oc" '(visual-fill-column-mode :which-key "toggle centred")
-  "oh" '(consult-outline :which-key "goto heading"))
-#+end_src
-
-** programming binds
-#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
-(zf/leader
-  "l" '(:ignore t :which-key "lsp")
-  "lf" '(lsp-format-buffer :which-key "format")
-  "ld" '(lsp-ui-doc-glance :which-key "documentation"))
-#+end_src
+** Web Browsing :FUTURE:
 
 * Programming
-** lsp-mode setup
+** LSP :BINDING:UX:HOOK:MODE:
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
 (use-package lsp-mode
-  :config
-  (setq lsp-completion-provider :none
-        lsp-headerline-breadcrumb-enable nil
-        lsp-inlay-hint-enable t)
+  :commands (lsp lsp-deferred)
+  :config (setq lsp-completion-provider :none
+                lsp-headerline-breadcrumb-enable nil
+                lsp-inlay-hint-enable nil)
   :hook ((lsp-mode . lsp-enable-which-key-integration)
          (lsp-mode . (lambda ()
                        (setf (alist-get 'styles (alist-get 'lsp-capf completion-category-defaults))
-                             '(orderless)))))
-  :commands (lsp lsp-deferred))
+                             '(orderless))))))
 
 (use-package lsp-ui
+  :diminish lsp-ui-mode
   :hook (lsp-mode . lsp-ui-mode)
-  :bind (:map lsp-ui-mode-map
-              ("TAB" . lsp-ui-doc-focus-frame))
+  :bind (:map lsp-ui-mode-map ("TAB" . lsp-ui-doc-focus-frame))
   :config
   (setq lsp-ui-doc-enable t
         lsp-ui-doc-show-with-mouse t
-        lsp-ui-doc-position 'at-point))
+        lsp-ui-doc-position 'at-point)
+  (zf/leader
+    "l" '(:ignore t :which-key "lsp")
+    "lf" '(lsp-format-buffer :which-key "format")
+    "ld" '(lsp-ui-doc-glance :which-key "documentation")))
 #+end_src
 
-** corfu setup
-completions
+** Completions :BINDING:UI:UX:HOOK:MODE:
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
-(use-package corfu 
+(use-package corfu
+  :diminish corfu-mode
   :init (global-corfu-mode)
-  :hook (corfu-mode . corfu-popupinfo-mode)
+  :hook ((corfu-mode . corfu-popupinfo-mode)
+         (org-mode . (lambda () (corfu-mode -1))))
   :bind (:map corfu-map
 		          ("RET" . nil)
 		          ("C-j" . corfu-next)
 		          ("C-k" . corfu-previous))
-  :config
-  (setq lsp-completion-provider :none
-        completion-category-defaults nil))
+  :config (setq lsp-completion-provider :none
+                completion-category-defaults nil
+                corfu-auto t
+                corfu-cycle t
+                corfu-auto-delay 0
+                corfu-auto-prefix 1
+                corfu-popupinfo-delay '(2.0 . 0.5)))
 
-(add-hook 'org-mode-hook (lambda () (corfu-mode -1)))
+(use-package nerd-icons-corfu
+  :config (add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter))
 
-(setq corfu-auto t
-      corfu-cycle t
-      corfu-auto-delay 0 
-      corfu-auto-prefix 1
-      corfu-popupinfo-delay '(2.0 . 0.5))
-
-(use-package nerd-icons-corfu)
-(add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter)
-
+;; additonal completion sources
 (use-package cape
   :init
   (add-to-list 'completion-at-point-functions #'cape-dabbrev)
@@ -520,25 +519,19 @@ completions
   (add-to-list 'completion-at-point-functions #'cape-keyword)
   (add-to-list 'completion-at-point-functions #'cape-tex)
   (add-to-list 'completion-at-point-functions #'cape-file))
-
 #+end_src
 
-** flycheck setup
-modern syntax checking
+** Linting :UI:UX:MODE:
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
 (use-package flycheck
-  :init (global-flycheck-mode))
-(with-eval-after-load 'flycheck
-  (setq-default flycheck-disabled-checkers '(org-lint)))
+  :diminish flycheck-mode
+  :init (global-flycheck-mode)
+  :config
+  (setq flycheck-disabled-checkers '(org-lint)))
 #+end_src
 
-** rainbow delimeters
-#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
-(use-package rainbow-delimiters
-  :hook (prog-mode . rainbow-delimiters-mode))
-#+end_src
-
-** haskell
+** Language(s)
+*** haskell :MODE:HOOK:
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
 (use-package lsp-haskell
   :mode "\\.hs\\'"
@@ -548,25 +541,26 @@ modern syntax checking
   :hook (haskell-mode-hook . lsp-deferred))
 #+end_src
 
-** elisp
+*** elisp :MODE:HOOK:
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
 (use-package aggressive-indent
+  :diminish aggressive-indent-mode
   :hook (emacs-lisp-mode . aggressive-indent-mode))
 
 (use-package poly-org
-  :after org
+  :diminish poly-org-mode
+  :hook (org-mode . poly-org-mode)
   :config
   (setq org-src-preserve-indentation nil
-        org-src-content-indentation 0)
-  (poly-org-mode 1))
-;;(add-hook 'org-mode-hook #'poly-org-mode)) ;; do not use :hook, to prevent it from reenabling when manually disabled
+        org-src-content-indentation 0))
 #+end_src
 
-** nix
+*** nix :MODE:HOOK:
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
 (use-package nix-mode
   :mode "\\.nix\\'"
-  :hook (nix-mode . lsp-deferred))
+  :hook (nix-mode . lsp-deferred)
+  :config (setq lsp-nix-nixd-formatting-command ["alejandra"]))
 
 (with-eval-after-load 'lsp-mode
   (lsp-register-client
@@ -575,32 +569,204 @@ modern syntax checking
     :major-modes '(nix-mode)
     :priority 0
     :server-id 'nixd)))
-
-(setq lsp-nix-nixd-formatting-command ["alejandra"])
-#+end_src
-** markdown
-#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
-(use-package markdown-mode)
 #+end_src
 
-** rust
+*** rust :MODE:HOOK:
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
 (use-package rust-mode
   :mode "\\.rs\\'"
   :hook (rust-mode-hook . lsp-deferred))
 #+end_src
 
-** java
+*** java :MODE:HOOK:
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
 (use-package lsp-java
   :mode "\\.java\\'"
   :hook (java-mode-hook . lsp))
 #+end_src
-* Visuals :FUTURE:
-** miscellaneous temp :VISUAL:HACK:
-#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el 
-(use-package doom-themes
+
+*** typst :MODE:HOOK:
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+(use-package typst-ts-mode
+  :vc (:url "https://codeberg.org/meow_king/typst-ts-mode.git"))
+#+end_src
+
+* PKMS & Academia
+** Org Setup :MODE:BINDING:HOOK:
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+(setq org-directory "/Users/zayaanazam/Library/CloudStorage/ProtonDrive-zf.azam@proton.me-folder/pkm"
+      org-log-done 'time
+      org-log-into-drawer "LOGBOOK"
+      org-deadline-warning-days 0
+      org-element-use-cache nil
+      org-ellipsis "..."
+      org-auto-align-tags nil)
+
+(advice-add 'org-store-log-note :after #'org-cycle-hide-drawers)
+
+(add-hook 'org-mode-hook
+          (lambda ()
+            (org-indent-mode 1)
+            (visual-line-mode 1)))
+
+(zf/leader
+  "o" '(:ignore t :which-key "org")
+  "of"  '((lambda () (interactive) (affe-find "~/pkm/")) :which-key "fuzzy find")
+  "oc" '(visual-fill-column-mode :which-key "toggle centred"))
+#+end_src
+
+** Tags :BINDING:
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+(setq org-tag-alist '((:startgroup . nil)
+                      ("@laptop" . ?l) ("@home" . ?h) ("@kings-buildings" . ?k) ("@george-square" . ?g) ("@city" . ?c)
+                      (:endgroup . nil)
+                      ("HABIT" . ?H)
+                      ("DATA-LOG" . ?D)
+                      ("PROJ" . ?P)
+                      ("CHORE" . ?C)
+                      ("UNI" . ?U)
+                      ("HEALTH" . ?H)
+                      ("SOCIAL" . ?S)
+                      ("CREATIVE" . ?R)))
+(zf/leader
+  "ot" '(org-ctrl-c-ctrl-c :wk "update tag"))
+
+#+end_src
+
+** TODOs :BINDING:
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+(setq org-todo-keywords
+      '((sequence "TODO(t)" "|" "DONE(d!)")
+        (sequence "PROJ(p)" "MKNG(k!)" "|" "MADE(m!)")
+        (sequence "HWRK(h)" "INPR(i!)" "|" "SUBM(s!)")
+        (sequence "LECT(l)" "TTRL(t)" "NOTE(n!)" "|" "CCLD(c!)")
+        (sequence "HABT(H)" "|" "DONE(d!)")
+        (sequence "DATA(D)" "|" "LGGD(d!)")))
+
+(zf/leader
+  "oT" '(org-todo :wk "update todo state"))
+#+end_src
+
+** Agenda :BINDING:
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+(setq org-agenda-skip-scheduled-if-done t
+      org-agenda-skip-deadline-if-done t
+      org-agenda-block-seperator 8411
+      org-agenda-current-time-string "<- now"
+      org-agenda-use-time-grid t
+      org-agenda-breadcrumbs-level 2)
+
+(setq org-agenda-custom-commands
+      '(
+        ("o" "short term"
+         ((agenda "" ((org-agenda-span 3)
+                      (org-agenda-start-day "-1d")
+                      (org-agenda-start-on-weekday nil)))))))
+
+;;(setq org-agenda-prefix-format
+;;      '((agenda . "%i %-12:c%?-12t% s%b")
+;;        (todo . " %b %i %-12:c")
+;;        (tags . " %i %-12:c")
+;;        (search . " %i %-12:c")))
+
+;; TODO add org-agenda-source-files here
+
+(zf/leader
+  "oa" '(org-agenda :wk "agenda"))
+#+end_src
+
+** Org-Roam :BINDING:
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+(use-package org-roam :diminish org-roam-mode)
+(use-package org-roam-ui :diminish org-roam-ui-mode)
+
+
+(use-package md-roam
+  :vc (:url "https://github.com/nobiot/md-roam")
+  :diminish md-roam-mode
+  :config
+  (setq org-roam-directory "/Users/zayaanazam/Library/CloudStorage/ProtonDrive-zf.azam@proton.me-folder/pkm"
+        org-roam-file-extensions '("org" "md")
+        org-roam-ui-sync-theme t
+        org-roam-ui-follow t
+        org-roam-ui-update-on-save t
+        org-roam-ui-open-on-start t
+        org-roam-dailies-directory "journal/day/")
+  (md-roam-mode 1)
+  (org-roam-db-autosync-mode 1))
+
+(zf/leader
+  "or" '(:ignore t :wk "roam")
+  "org" '(org-roam-ui-open :wk "open graph"))
+
+#+end_src
+
+** Habit Tracking
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+(add-to-list 'org-modules 'org-habit t)
+#+end_src
+
+** Data Logging
+** Timeblocking
+** Latex :UNFINISHED:
+yasnippets
+
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+(use-package pdf-tools
+  :config
+  (pdf-tools-install)
+  (setq-default pdf-view-display-size 'fit-page)
+  (add-hook 'pdf-view-mode-hook #'auto-revert-mode)
+  (add-hook 'pdf-view-mode-hook
+            (lambda () (display-line-numbers-mode -1))))
+(use-package auctex
   :defer t
+  :config
+  (setq TeX-auto-save t
+        TeX-parse-self t
+        TeX-save-query nil)
+  (add-hook 'LaTeX-mode-hook
+            (lambda ()
+              (setq TeX-command-default "LaTeX")
+              (add-hook 'after-save-hook
+                        (lambda ()
+                          (TeX-command "LaTeX" #'TeX-master-file -1))
+                        nil t))))
+#+end_src
+** Typst
+** PDF Tooling :UNFINISHED:
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+(use-package markdown-mode)
+#+end_src
+
+* Visuals :FUTURE:
+** Iconography :UI:
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+(use-package nerd-icons)
+#+end_src
+
+** Modeline :VISUAL:HACK:
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+(setq evil-mode-line-format '(before . mode-line-front-space)
+      column-number-mode nil
+      line-number-mode nil)
+
+(setq-default mode-line-mule-info ""
+              mode-line-modified ""
+              mode-line-remote ""
+              mode-line-percent-position nil)
+
+(setq-default mode-line-format
+              (append mode-line-format
+                      '("    " (:eval (abbreviate-file-name default-directory)))))
+
+#+end_src
+** Colours :UI:HACK:MODE:
+FUTURE: keybinds, color formats
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+(use-package nerd-icons)
+
+(use-package doom-themes
   :config
   (setcdr (assoc 'gnus-group-news-low-empty doom-themes-base-faces)
 	        '(:inherit 'gnus-group-mail-1-empty :weight 'normal))
@@ -611,48 +777,15 @@ modern syntax checking
         evil-motion-state-cursor  '("#ee6a50" box)
         evil-emacs-state-cursor   '("#ee6a50" box))
   (doom-themes-org-config))
-(load-theme 'doom-wilmersdorf t)
 
-(use-package solaire-mode
-  :config
-  (solaire-global-mode +1))
+(load-theme 'doom-molokai t)
 
-(use-package centaur-tabs
-  :config
-  (add-to-list 'centaur-tabs-excluded-prefixes "*")
-  (setq centaur-tabs-height 20
-        centaur-tabs-set-icons t
-        centaur-tabs-plain-icons t
-        centaur-tabs-icon-type 'nerd-icons
-        centaur-tabs-set-modified-marker t
-        centaur-tabs-cycle-scope 'tabs
-        centaur-tabs-modified-marker "*")
-  (centaur-tabs-mode 1))
-
-(add-to-list 'default-frame-alist '(undecorated . t))
-
-(use-package beacon
-  :config
-  (setq beacon-blink-when-point-moves-vertically 5
-        beacon-blink-when-focused t
-        beacon-blink-when-window-changes t
-        beacon-blink-when-buffer-changes t
-        beacon-size 20
-        beacon-blink-delay 0.25
-        beacon-blink-duration 0.25)
-  (beacon-mode))
-#+end_src
-** colour helpers
-#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
-;;(use-package colorful-mode
-;;  :config
-;;  (global-colorful-mode))
 (use-package rainbow-mode
+  :diminish rainbow-mode
   :hook org-mode prog-mode)
-;; TODO add keybinds for color helpers
-;; TODO enable in all modes, update stylings, enable for different color formats
 #+end_src
-** M-x styling :VISUAL:HACK:
+
+** Minibuf :VISUAL:HACK:
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
 (use-package vertico-posframe
   :after vertico
@@ -676,7 +809,8 @@ modern syntax checking
   (set-face-attribute 'vertico-posframe-border nil :background "transparent")
   (vertico-posframe-mode 1))
 #+end_src
-** fonts :VISUAL:HACK:
+
+** Fonts :VISUAL:HACK:
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
 (set-face-attribute 'default nil
                     :font "Departure Mono"
@@ -712,31 +846,47 @@ modern syntax checking
 
 #+end_src
 
-** modeline :VISUAL:HACK:
-
-* PKMS
-** org
+** Usability Improvements :UI:UX:
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
-(setq org-element-use-cache nil)
+(use-package solaire-mode
+  :config
+  (solaire-global-mode +1))
 
-(defun zf/org-mode-setup ()
-  (org-indent-mode 1)
-  (visual-line-mode 1)
-  (setq org-ellipsis "..."))
+(use-package beacon
+  :diminish beacon-mode
+  :config
+  (setq beacon-blink-when-point-moves-vertically 5
+        beacon-blink-when-focused t
+        beacon-blink-when-window-changes t
+        beacon-blink-when-buffer-changes t
+        beacon-size 20
+        beacon-blink-delay 0.25
+        beacon-blink-duration 0.25)
+  (beacon-mode))
 
-(add-hook 'org-mode-hook 'zf/org-mode-setup)
-
-(setq visual-fill-column-width 150
-      visual-fill-column-center-text t)
-
+(use-package rainbow-delimiters
+  :hook (prog-mode . rainbow-delimiters-mode))
+#+end_src
+** Startup Buffer :UI:
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+#+end_src
+** Org :UI:UX:VISUAL:
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
 (use-package visual-fill-column
-  :hook (org-mode . visual-fill-column-mode))
+  :diminish visual-fill-column-mode
+  :hook
+  (org-mode . visual-fill-column-mode)
+  (poly-org-mode . visual-fill-column-mode)
+  (emacs-lisp-mode . visual-fill-column-mode)
+  :config
+  (setq-default visual-fill-column-width 150
+                visual-fill-column-center-text t))
 
 (use-package hl-todo
+  :diminish hl-todo-mode
   :demand t
   :init (global-hl-todo-mode))
+
 #+end_src
 
-
-* Academia
 

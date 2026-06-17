@@ -4,7 +4,7 @@
 
   config = lib.mkIf config.nvim.enable {
     home.packages = [
-      inputs.self.packages.${pkgs.system}.nvim
+      inputs.self.packages.${pkgs.stdenv.hostPlatform.system}.nvim
     ];
   };
 }

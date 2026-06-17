@@ -18,6 +18,11 @@ let
 
     ## deps
     ripgrep
+
+    texlive.scheme-medium
+    texlive.transparent
+    texlive.latexmk
+
   ];
 
   tempDir = pkgs.runCommand "iniFolder" {} ''
