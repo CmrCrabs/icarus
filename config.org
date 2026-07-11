@@ -17,6 +17,9 @@ Tags Used:
 - :OTHER: tangles to a different file
 
 must eval [[Helpers]] before running (C-c C-c)
+then org-babel-tangle (C-c C-v t)
+if on termux:x11, f11 for fullscreen (toggle-frame-fullscreen)
+
 ** Headers :OTHER:
 to suppress emacs-30 warnings
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
@@ -28,7 +31,6 @@ to suppress emacs-30 warnings
 #+end_src
 
 ** Helpers
-
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el :results none
 (setq zf/pkm-file-path "/Users/zayaanazam/Library/CloudStorage/ProtonDrive-zf.azam@proton.me-folder/pkm")
 
@@ -39,6 +41,8 @@ to suppress emacs-30 warnings
            (string-match-p "com.termux" (or (getenv "HOME") "")))
        (getenv "DISPLAY")
        (display-graphic-p)))
+
+(defun )
 #+end_src
 
 * Adjusting Emacs-isms
@@ -447,7 +451,7 @@ FUTURE: change grep target
 #+end_src
 
 ** Terminal  :PHONE_DISABLED:
-#+begin_src emacs-lisp :tangle (if (zf/termux-x11-p) "~/.emacs.d/init.el" "no")
+#+begin_src emacs-lisp :tangle (if (not (zf/termux-x11-p)) "~/.emacs.d/init.el" "no")
 (use-package vterm
   :diminish vterm-mode
   :commands (vterm vterm-other-window)
@@ -479,8 +483,8 @@ FUTURE: change grep target
 #+end_src
 
 * Programming
-** LSP
-#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+** LSP :PHONE_DISABLED:
+#+begin_src emacs-lisp :tangle (if (not (zf/termux-x11-p)) "~/.emacs.d/init.el" "no")
 (use-package lsp-mode
   :commands (lsp lsp-deferred)
   :config (setq lsp-completion-provider :none
@@ -550,7 +554,7 @@ FUTURE: change grep target
 
 ** Language(s)
 *** haskell
-#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+#+begin_src emacs-lisp :tangle (if (not (zf/termux-x11-p)) "~/.emacs.d/init.el" "no")
 (use-package lsp-haskell
   :mode "\\.hs\\'"
   :hook (haskell-mode-hook . lsp-haskell))
@@ -590,14 +594,14 @@ FUTURE: change grep target
 #+end_src
 
 *** rust
-#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+#+begin_src emacs-lisp :tangle (if (not (zf/termux-x11-p)) "~/.emacs.d/init.el" "no")
 (use-package rust-mode
   :mode "\\.rs\\'"
   :hook (rust-mode-hook . lsp-deferred))
 #+end_src
 
 *** java
-#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+#+begin_src emacs-lisp :tangle (if (not (zf/termux-x11-p)) "~/.emacs.d/init.el" "no")
 (use-package lsp-java
   :mode "\\.java\\'"
   :hook (java-mode-hook . lsp))
@@ -830,7 +834,7 @@ daily notes
 *** Latex + Pdf + md :UNFINISHED:PHONE_DISABLED:
 yasnippets, also add typst
 
-#+begin_src emacs-lisp :tangle (if (zf/termux-x11-p) "~/.emacs.d/init.el" "no")
+#+begin_src emacs-lisp :tangle (if (not (zf/termux-x11-p)) "~/.emacs.d/init.el" "no")
 (use-package pdf-tools
   :config
   (pdf-tools-install)
