@@ -23,6 +23,10 @@
 
       # java
       jdk25_headless
+
+
+      # emacs
+      gnuplot
     ];
   };
 }

@@ -11,7 +11,7 @@
   home.stateVersion = "25.05";
       
   home.sessionVariables = {
-    EDITOR = "nvim";
+    EDITOR = "emacs";
     SHELL = "fish";
     TERMINAL = "ghostty";
     BROWSER = "firefox";

@@ -20,7 +20,7 @@
 - Nicolas Rougier : https://github.com/rougier/dotemacs/
 - Henrik Lissner  : https://github.com/doomemacs/doomemacs
 - SystemCrafters  : https://www.youtube.com/playlist?list=PLEoMzSkcN8oPH1au7H6B7bBJ4ZO7BXjSZ
-* Adjusting Emacs-isms
+* Helpers
 ** Headers :OTHER:
 to suppress emacs-30 warnings
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
@@ -31,6 +31,12 @@ to suppress emacs-30 warnings
 ;;; -*- lexical-binding: t -*-
 #+end_src
 
+** Variables
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+(setq zf/pkm-file-path "/Users/zayaanazam/Library/CloudStorage/ProtonDrive-zf.azam@proton.me-folder/pkm")
+#+end_src
+
+* Adjusting Emacs-isms
 ** Optimisations
 *** startup performance :HOOK:
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
@@ -78,6 +84,8 @@ to suppress emacs-30 warnings
 
 ;; Editor
 (electric-indent-mode 1)
+(global-auto-revert-mode 1) ;; allows syncing externally
+(setq auto-revert-remote-files 1)
 (electric-pair-mode 1)
 (global-unset-key (kbd "M-z")) ;; never used, accidental press bad
 (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
@@ -153,6 +161,14 @@ for automatic cleanup
   (evil-mode))
 
 (add-hook 'prog-mode-hook #'hs-minor-mode)
+
+(use-package evil-collection
+  :after evil
+  :ensure t
+  :config
+  (setq evil-collection-mode-list nil)
+  (add-to-list 'evil-collection-mode-list 'org-agenda)
+  (evil-collection-init))
 #+end_src
 
 *** which-key :BINDING:UX:HOOK:
@@ -591,10 +607,10 @@ FUTURE: change grep target
   :vc (:url "https://codeberg.org/meow_king/typst-ts-mode.git"))
 #+end_src
 
-* PKMS & Academia
+* PKMS
 ** Org Setup :MODE:BINDING:HOOK:
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
-(setq org-directory "/Users/zayaanazam/Library/CloudStorage/ProtonDrive-zf.azam@proton.me-folder/pkm"
+(setq org-directory zf/pkm-file-path
       org-log-done 'time
       org-log-into-drawer "LOGBOOK"
       org-deadline-warning-days 0
@@ -610,26 +626,35 @@ FUTURE: change grep target
             (visual-line-mode 1)))
 
 (zf/leader
-  "o" '(:ignore t :which-key "org")
-  "of"  '((lambda () (interactive) (affe-find "~/pkm/")) :which-key "fuzzy find")
-  "oc" '(visual-fill-column-mode :which-key "toggle centred"))
+  "o"  '(:ignore t :which-key "org")
+  "of" '((lambda () (interactive) (affe-find "~/pkm/")) :which-key "fuzzy find")
+  "oc" '(org-capture :which-key "org capture")
+  "ov" '(visual-fill-column-mode :which-key "toggle centred"))
+
+(with-eval-after-load 'org
+  (general-define-key
+   :keymaps 'org-read-date-minibuffer-local-map
+   "C-h" 'org-calendar-backward-day
+   "C-l" 'org-calendar-forward-day
+   "C-k" 'org-calendar-backward-week
+   "C-j" 'org-calendar-forward-week))
 #+end_src
 
 ** Tags :BINDING:
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
 (setq org-tag-alist '((:startgroup . nil)
-                      ("@laptop" . ?l) ("@home" . ?h) ("@kings-buildings" . ?k) ("@george-square" . ?g) ("@city" . ?c)
+                      ("@laptop" . ?l) ("@home" . ?h) ("@kings-buildings" . ?k) ("@george-square" . ?g) ("@city" . ?c) ("@ipad" . ?i) ("@gym" . ?g)
                       (:endgroup . nil)
                       ("HABIT" . ?H)
                       ("DATA-LOG" . ?D)
                       ("PROJ" . ?P)
                       ("CHORE" . ?C)
                       ("UNI" . ?U)
-                      ("HEALTH" . ?H)
+                      ("HEALTH" . ?E)
                       ("SOCIAL" . ?S)
                       ("CREATIVE" . ?R)))
 (zf/leader
-  "ot" '(org-ctrl-c-ctrl-c :wk "update tag"))
+  "oT" '(org-ctrl-c-ctrl-c :wk "update tag"))
 
 #+end_src
 
@@ -644,12 +669,17 @@ FUTURE: change grep target
         (sequence "DATA(D)" "|" "LGGD(d!)")))
 
 (zf/leader
-  "oT" '(org-todo :wk "update todo state"))
+  "ot" '(:ignore t :wk "todo")
+  "otu" '(org-todo :wk "update state")
+  "otd" '(org-deadline :wk "deadline")
+  "ots" '(org-schedule :wk "schedule"))
 #+end_src
 
 ** Agenda :BINDING:
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
-(setq org-agenda-skip-scheduled-if-done t
+(setq org-agenda-files (list (concat zf/pkm-file-path "/agenda")
+                             (concat zf/pkm-file-path "/journal"))
+      org-agenda-skip-scheduled-if-done t
       org-agenda-skip-deadline-if-done t
       org-agenda-block-seperator 8411
       org-agenda-current-time-string "<- now"
@@ -669,36 +699,123 @@ FUTURE: change grep target
 ;;        (tags . " %i %-12:c")
 ;;        (search . " %i %-12:c")))
 
-;; TODO add org-agenda-source-files here
-
 (zf/leader
   "oa" '(org-agenda :wk "agenda"))
 #+end_src
 
-** Org-Roam :BINDING:
+** Journal
+daily notes
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
-(use-package org-roam :diminish org-roam-mode)
-(use-package org-roam-ui :diminish org-roam-ui-mode)
+(setq zf/daily-note-template
+      (concat "* Agenda Scratchpad\n\n"
+              "* Dream Journal\n\n"
+              "* Logbook\n\n"
+              "* Catchment\n\n"))
 
+(defun zf/call-with-prefix (f)
+  "Calls function F with the universal prefix."
+  (let ((current-prefix-arg '(4)))
+    (call-interactively f)))
 
-(use-package md-roam
-  :vc (:url "https://github.com/nobiot/md-roam")
-  :diminish md-roam-mode
+(use-package org-journal
+  :diminish t
+  :init (setq org-journal-prefix-key "C-c j")
   :config
-  (setq org-roam-directory "/Users/zayaanazam/Library/CloudStorage/ProtonDrive-zf.azam@proton.me-folder/pkm"
-        org-roam-file-extensions '("org" "md")
-        org-roam-ui-sync-theme t
-        org-roam-ui-follow t
-        org-roam-ui-update-on-save t
-        org-roam-ui-open-on-start t
-        org-roam-dailies-directory "journal/day/")
-  (md-roam-mode 1)
-  (org-roam-db-autosync-mode 1))
+  (setq org-journal-dir (concat zf/pkm-file-path "/journal/")
+        org-journal-file-header zf/daily-note-template
+        org-journal-carryover-items ""
+        org-journal-find-file-fn 'find-file
+        org-journal-file-format "%d-%m-%Y.org"
+        org-journal-file-type 'daily))
+
+(use-package org-ql)
+
+(defun zf/todo-journal-logbook ()
+  "Copy completed TODOs to that day's logbook."
+  (interactive)
+  (let* ((input-date (org-read-date))
+         (entries (org-ql-query
+                    :select '(let* ((heading (org-get-heading t t t t))
+                                    (state (org-get-todo-state))
+                                    (raw-body (org-get-entry))
+                                    (body (replace-regexp-in-string
+                                           "^[ \t]*:\\(LOGBOOK\\|PROPERTIES\\):\\(?:\n\\|.\\)*?\\(?:\n[ \t]*:END:\\)\n?"
+                                           ""
+                                           raw-body))
+                                    (tags-str (if (org-get-tags) (mapconcat 'identity (org-get-tags) ":") ""))
+                                    (breadcrumbs-str (mapconcat 'identity (org-get-outline-path) ">"))
+                                    (filename (file-name-nondirectory (buffer-file-name))))
+                               (concat "**** *" state "* "
+                                       "[" filename "] "
+                                       (if (string-empty-p breadcrumbs-str) "" breadcrumbs-str)
+                                       " " heading
+                                       (if (string-empty-p tags-str) "" (concat " :" tags-str ":"))
+                                       "\n" body))
+                    :from (org-agenda-files)
+                    :where `(and (done) (closed :on ,input-date)))))
+    (if entries
+        (insert (mapconcat 'identity entries "\n\n"))
+      (message "No TODOs found on %s" input-date))))
 
 (zf/leader
-  "or" '(:ignore t :wk "roam")
-  "org" '(org-roam-ui-open :wk "open graph"))
+  "oj" '(:ignore t :wk "journal")
+  "ojl" '(zf/todo-journal-logbook :wk "source logbook")
+  "ojd" '(org-journal-open-current-journal-file :wk "open today"))
+#+end_src
 
+** Org Capture
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+(defun zf/todays-journal-file ()
+  "Return today's org-journal file."
+  (interactive)
+  (let ((org-journal-file (org-journal--get-entry-path
+                           (time-subtract (current-time)
+                                          (* 3600 org-extend-today-until)))))
+    org-journal-file))
+
+(setq org-capture-templates
+      '(("j" "Journal Catchment" item
+         (file+headline zf/todays-journal-file "Catchment")
+         "%?" :kill-buffer t)
+        ("d" "Dream Journal" plain
+         (file+headline zf/todays-journal-file "Dream Journal")
+         "%?" :kill-buffer t)
+        ("a" "Agenda Scratchpad" entry
+         (file+headline zf/todays-journal-file "Agenda Scratchpad")
+         "* TODO  %?" :kill-buffer t)
+        ("n" "Nutritional Info" table-line
+         (file+headline (expand-file-name org-directory "datalog.org") "NUTRITION")
+         "| %<%Y-%m-%d> | %^{Calories} | %^{Protein} | %^{Fat} | %^{Carbs} |" :kill-buffer t)
+        ("m" "Morning Data" table-line
+         (file+headline (expand-file-name org-directory "datalog.org") "Health Markers'")
+         "| %<%Y-%m-%d> | %^{Weight} | %^{Wake Up Time} | | %^{Hours Slept} | |" :kill-buffer t)
+        ("e" "Evening Data" table-line
+         (file+headline (expand-file-name org-directory "datalog.org") "Health Markers'")
+         "| %<%Y-%m-%d> | | | %^{Bedtime} | | %^{Steps} |" :kill-buffer t)
+        ))
+
+(add-hook 'org-capture-mode-hook 'evil-insert-state)
+
+(setq-default display-buffer-alist
+              '(
+                ("\\*Org Select\\*"
+                 (display-buffer-in-side-window)
+                 (side . bottom)
+                 (slot . 0)
+                 (window-height . fit-window-to-buffer)
+                 (window-parameters . ((no-other-window . t))))
+                ("CAPTURE-.*"
+                 (display-buffer-in-side-window)
+                 (side . bottom)
+                 (slot . 0)
+                 (window-height . 0.25)
+                 (window-parameters . ((no-other-window . t))))
+                ("\\*Calendar\\*"
+                 (display-buffer-in-side-window)
+                 (side . bottom)
+                 (slot . 1)
+                 (window-height . fit-window-to-buffer)
+                 (window-parameters . ((no-other-window . t))))))
 #+end_src
 
 ** Habit Tracking
@@ -706,10 +823,16 @@ FUTURE: change grep target
 (add-to-list 'org-modules 'org-habit t)
 #+end_src
 
-** Data Logging
+** Data Logging + Visualisation
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+(use-package gnuplot)
+(use-package gnuplot-mode)
+#+end_src
+
 ** Timeblocking
-** Latex :UNFINISHED:
-yasnippets
+* ACADEMIA
+** Latex + Pdf + md :UNFINISHED:
+yasnippets, also add typst
 
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
 (use-package pdf-tools
@@ -732,13 +855,9 @@ yasnippets
                         (lambda ()
                           (TeX-command "LaTeX" #'TeX-master-file -1))
                         nil t))))
-#+end_src
-** Typst
-** PDF Tooling :UNFINISHED:
-#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+
 (use-package markdown-mode)
 #+end_src
-
 * Visuals :FUTURE:
 ** Iconography :UI:
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el

@@ -78,21 +78,21 @@
       specialArgs = { inherit inputs; };
     };
 
-    nixosConfigurations."pi" = nixpkgs.lib.nixosSystem {
-      system = "aarch64-linux";
-      modules = [
-        ./hosts/pi/configuration.nix
-        inputs.home-manager.nixosModules.home-manager
-        {
-          home-manager = {
-            useGlobalPkgs = true;
-            useUserPackages = true;
-            extraSpecialArgs = { inherit inputs; };
-            users.zayaanazam = import ./hosts/pi/home.nix;
-          };
-        }
-      ];
-      specialArgs = { inherit inputs; };
-    };
+    # nixosConfigurations."pi" = nixpkgs.lib.nixosSystem {
+    #   system = "aarch64-linux";
+    #   modules = [
+    #     ./hosts/pi/configuration.nix
+    #     inputs.home-manager.nixosModules.home-manager
+    #     {
+    #       home-manager = {
+    #         useGlobalPkgs = true;
+    #         useUserPackages = true;
+    #         extraSpecialArgs = { inherit inputs; };
+    #         users.zayaanazam = import ./hosts/pi/home.nix;
+    #       };
+    #     }
+    #   ];
+    #   specialArgs = { inherit inputs; };
+    # };
   };
 }

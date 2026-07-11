@@ -59,7 +59,7 @@
         ShowPathbar = true;
       };
       loginwindow = {
-        LoginwindowText = "be delusional.";
+        LoginwindowText = "be delusional. ";
       };
       trackpad = {
         Clicking = true;
