@@ -18,7 +18,7 @@ Tags Used:
 
 must eval [[Helpers]] before running (C-c C-c)
 then org-babel-tangle (C-c C-v t)
-if on termux:x11, f11 for fullscreen (toggle-frame-fullscreen)
+if on termux:x11, <f11> for fullscreen (toggle-frame-fullscreen)
 
 ** Headers :OTHER:
 to suppress emacs-30 warnings
@@ -42,7 +42,6 @@ to suppress emacs-30 warnings
        (getenv "DISPLAY")
        (display-graphic-p)))
 
-(defun )
 #+end_src
 
 * Adjusting Emacs-isms
