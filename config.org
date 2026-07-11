@@ -32,7 +32,6 @@ to suppress emacs-30 warnings
 
 ** Helpers
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el :results none
-(setq zf/pkm-file-path "/Users/zayaanazam/Library/CloudStorage/ProtonDrive-zf.azam@proton.me-folder/pkm")
 
 (defun zf/termux-x11-p ()
   "Return t if in Termux:X11."
@@ -41,6 +40,10 @@ to suppress emacs-30 warnings
            (string-match-p "com.termux" (or (getenv "HOME") "")))
        (getenv "DISPLAY")
        (display-graphic-p)))
+
+(setq zf/pkm-file-path (if (zf/termux-x11-p)
+                           "/data/data/com.termux/files/home/storage/shared/SYNCTHING-2026"
+                         "/Users/zayaanazam/Library/CloudStorage/ProtonDrive-zf.azam@proton.me-folder/pkm"))
 
 #+end_src
 
@@ -166,6 +169,8 @@ for automatic cleanup
   (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
   (define-key evil-insert-state-map (kbd "C-k") nil)
   (define-key evil-insert-state-map (kbd "C-j") nil)
+  (evil-define-key 'normal 'global (kbd "+") 'text-scale-increase)
+  (evil-define-key 'normal 'global (kbd "-") 'text-scale-decrease)
   (evil-mode))
 
 (add-hook 'prog-mode-hook #'hs-minor-mode)
