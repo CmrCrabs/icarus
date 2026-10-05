@@ -1,4 +1,4 @@
-+TITLE: emacs literate configuration
+#+TITLE: emacs literate configuration
 #+AUTHOR: Zayaan F. Azam
 #+STARTUP: show3levels indent
 
@@ -43,8 +43,10 @@ to suppress emacs-30 warnings
 
 (setq zf/pkm-file-path (if (zf/termux-x11-p)
                            "/data/data/com.termux/files/home/storage/shared/SYNCTHING-2026"
-                         "/Users/zayaanazam/Library/CloudStorage/ProtonDrive-zf.azam@proton.me-folder/pkms/pkm")
-      zf/academic-notes-path (expand-file-name "academic" zf/pkm-file-path))
+                         "/Users/zayaanazam/Library/CloudStorage/ProtonDrive-zf.azam@proton.me-folder/pkms")
+      zf/curr-academic-path (expand-file-name "academic/Y2" zf/pkm-file-path))
+
+(setq zf/tabs-file-path (concat zf/pkm-file-path "/pkm/staging/emplace/tabs.org"))
 
 #+end_src
 
@@ -202,7 +204,7 @@ for automatic cleanup
   :config
   (general-create-definer zf/leader
     :states '(normal visual)
-    :prefix "SPC")
+    :prefix "SPC"   )
   (zf/leader
     "SPC" '(execute-extended-command :wk "M-x")
     ":" (list (lambda ()
@@ -397,6 +399,9 @@ ref: https://karthinks.com/software/emacs-window-management-almanac/
 
 (setq windmove-allow-all-windows t)
 
+(use-package ace-window
+  :config (setq aw-dispatch-always t))
+
 (zf/leader
   "w" '(:ignore t :wk "window")
   "wq" '(kill-buffer-and-window :wk "kill & quit")
@@ -469,15 +474,17 @@ ref: https://karthinks.com/software/emacs-window-management-almanac/
 *** browser (dired) / tree
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
 ;; may need require dired-x?
-(setq insert-directory-program "gls"
-      dired-kill-when-opening-new-dired-buffer t
+(setq dired-kill-when-opening-new-dired-buffer t
       dired-listing-switches "-agho --group-directories-first"
       dired-omit-files "^\\..*")
 (add-hook 'dired-mode-hook 'dired-hide-details-mode)
 (add-hook 'dired-mode-hook 'dired-omit-mode)
 
+(if (not (zf/termux-x11-p))
+    (setq insert-directory-program "gls"))
+
 (zf/leader
-  "fb" '(dired-jump :wk "browse"))
+  "fb" '(dired-jump-other-window :wk "browse"))
 
 (evil-define-key 'normal dired-mode-map
   (kbd "h") 'dired-up-directory
@@ -566,7 +573,19 @@ ref: https://karthinks.com/software/emacs-window-management-almanac/
            (multi-vterm))
          :which-key "open below"))
 #+end_src
+** Internet
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+(defun zf/open-tabs ()
+  "Open tabs."
+  (interactive)
+  (find-file zf/tabs-file-path))
 
+(zf/leader
+  "i" '(:ignore t :wk "internet")
+  "it" '(:ignore t :wk "tabs")
+  "ito" '(zf/open-tabs :wk "open tabs file"))
+
+#+end_src
 * Programming
 ** LSP :PHONE_DISABLED:
 #+begin_src emacs-lisp :tangle (if (not (zf/termux-x11-p)) "~/.emacs.d/init.el" "no")
@@ -698,6 +717,24 @@ ref: https://karthinks.com/software/emacs-window-management-almanac/
   :vc (:url "https://codeberg.org/meow_king/typst-ts-mode.git"))
 #+end_src
 
+*** javascript
+#+begin_src emacs-lisp :tangle (if (not (zf/termux-x11-p)) "~/.emacs.d/init.el" "no")
+(use-package web-mode
+  :mode
+  (("\\.html\\'" . web-mode)
+   ("\\.css\\'" . web-mode)
+   ("\\.js\\'" . web-mode)))
+
+(use-package prettier-js
+  :mode
+  (("\\.html\\'" . prettier-js-mode)
+   ("\\.css\\'" . prettier-js-mode)
+   ("\\.json\\'" . prettier-js-mode)
+   ("\\.js\\'" . prettier-js-mode))
+  :config (setq prettier-js-args '("--tab-width" "4"
+                                   "--print-width" "110")))
+#+end_src
+
 * PKM
 ** Org Setup :HACK:
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
@@ -718,11 +755,13 @@ ref: https://karthinks.com/software/emacs-window-management-almanac/
             (org-indent-mode 1)
             (visual-line-mode 1)))
 
+(evil-define-key 'normal 'global (kbd "RET") 'org-toggle-checkbox)
+
 (zf/leader
-  "o"  '(:ignore t :which-key "org")
-  "of" '((lambda () (interactive) (affe-find "~/pkm/")) :which-key "fuzzy find")
-  "oc" '(org-capture :which-key "org capture")
-  "ov" '(visual-fill-column-mode :which-key "toggle centred"))
+  "o"  '(:ignore t :wk "org")
+  "oC" '(org-capture :wk "org capture")
+  "oo" '(org-open-at-point :wk "open at point")
+  "ov" '(visual-fill-column-mode :wk "toggle centred"))
 
 (with-eval-after-load 'org
   (general-define-key
@@ -731,12 +770,18 @@ ref: https://karthinks.com/software/emacs-window-management-almanac/
    "C-l" 'org-calendar-forward-day
    "C-k" 'org-calendar-backward-week
    "C-j" 'org-calendar-forward-week))
+
+(use-package org-appear
+  :hook (org-mode . org-appear-mode)
+  :config (setq org-appear-trigger 'always
+                org-appear-autolinks t))
 #+end_src
 
 ** Tags :FUTURE:
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
 (setq org-tag-alist '((:startgroup . nil)
                       ("@laptop" . ?l) ("@home" . ?h) ("@kings-buildings" . ?k) ("@george-square" . ?g) ("@city" . ?c) ("@ipad" . ?i) ("@gym" . ?g) ("@labs" . ?g)
+                      ("@st-leonards" . ?g)
                       (:endgroup . nil)
                       ("HABIT" . ?H)
                       ("DATA-LOG" . ?D)
@@ -755,13 +800,16 @@ ref: https://karthinks.com/software/emacs-window-management-almanac/
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
 (setq org-todo-keywords
       '((sequence "TODO(t)" "|" "DONE(d!)")
-        (sequence "PROJ(p)" "MAKNG(k!)" "|" "MADE(m!)")
+        (sequence "PROJ(p)" "DOING(o!)" "|" "DONE(d!)")
         (sequence "ART(a)" "MAKNG(k!)" "|" "MADE(m!)")
-        (sequence "HWRK(h)" "DOING(d!)" "|" "SUBM(s!)")
-        (sequence "LECT(l)" "TTRL(t)" "LAB(L)" "NOTE(n!)" "|" "CLOSED(c!)")
+        (sequence "ASSIGNMENT(h)" "DOING(d!)" "|" "SUBMITTED(s!)")
+        (sequence "LECTURE(l)" "TUTORIAL(t)" "SEMINAR(s)" "LAB(L)" "NOTE(n!)" "|" "CLOSED(c!)")
         (sequence "HABIT(H)" "|" "DONE(d!)")
         (sequence "CHORE(c)" "|" "DONE(d!)")
+        (sequence "GOAL(g)" "|" "MET(m!)")
         (sequence "SOCIAL(s)" "|" "DONE(d!)")
+        (sequence "CAL(s)" "|" "DONE(d!)")
+        (sequence "TARGET(p)" "|" "MET(d!)")
         (sequence "DATA(D)" "|" "LOGGED(d!)")))
 
 (zf/leader
@@ -773,31 +821,45 @@ ref: https://karthinks.com/software/emacs-window-management-almanac/
 
 ** Agenda
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
-(setq org-agenda-files (append (list (concat zf/pkm-file-path "/agenda")
-                                     (concat zf/pkm-file-path "/journal"))
-                               (directory-files-recursively (concat zf/pkm-file-path "/project/") "\\.org$"))
+(setq org-agenda-files (append (list (concat zf/pkm-file-path "/pkm/agenda")
+                                     (concat zf/pkm-file-path "/pkm/journal")
+                                     (concat zf/curr-academic-path "/SEM1/Y2-SEM1.org")
+                                     (concat zf/curr-academic-path "/ELEE2/ELEE2.org")
+                                     (concat zf/curr-academic-path "/IADS/IADS.org")
+                                     (concat zf/curr-academic-path "/SEM1/AC2/AC2.org")
+                                     (concat zf/curr-academic-path "/SEM1/EM2A/EM2A.org")
+                                     (concat zf/curr-academic-path "/SEM1/INF2C/INF2C.org"))
+                               (directory-files-recursively (concat zf/pkm-file-path "/pkm/project/") "\\.org$"))
+
       org-agenda-skip-scheduled-if-done t
       org-agenda-skip-deadline-if-done t
       org-agenda-block-seperator 8411
       org-agenda-current-time-string "<- now"
       org-agenda-use-time-grid t
-      org-agenda-breadcrumbs-level 2)
+      org-agenda-breadcrumbs-level 2
+      org-agenda-sorting-strategy '((agenda time-up urgency-down priority-down category-keep)
+                                    (todo priority-down category-keep)
+                                    (tags priority-down category-keep)
+                                    (search category-keep)))
 
 
 (setq org-agenda-custom-commands
-      '(("o" "short term"
-         ((agenda "" ((org-agenda-span 3)
-                      (org-agenda-start-day "-1d")
+      '(("d" "day"
+         ((agenda "" ((org-agenda-span 1)
+                      (org-agenda-start-day "0d")
                       (org-agenda-start-on-weekday nil)))))
 
         ("t" "TODOs non time sensitive"
-         ((todo "TODO|PROJ|MAKNG|ART|HWRK|DOING|LECT|TTRL|LAB|NOTE|SOCIAL|DATA"
+         ((todo "GOAL|TODO|PROJ|MAKNG|ART|HWRK|DOING|LECT|TTRL|LAB|NOTE|SOCIAL|DATA"
                 ((org-agenda-group-by "todo")
                  (org-agenda-skip-function
                   '(org-agenda-skip-entry-if 'scheduled 'deadline))))))))
 
 (zf/leader
   "oa" '(org-agenda :wk "agenda"))
+
+
+
 #+end_src
 
 ** Journal :HACK:
@@ -805,9 +867,12 @@ daily notes
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
 (setq zf/daily-note-template
       (concat "* Agenda Scratchpad\n\n"
-              "* Dream Journal\n\n"
+              "* Journals\n\n"
+              "** Dream\n\n"
+              "** Catchment\n\n"
               "* Logbook :ARCHIVE:\n\n"
-              "* Catchment\n\n"))
+              "** Entries\n\n"
+              "** Tasks\n\n"))
 
 (defun zf/call-with-prefix (f)
   "Calls function F with the universal prefix."
@@ -818,7 +883,7 @@ daily notes
   :diminish t
   :init (setq org-journal-prefix-key "C-c j")
   :config
-  (setq org-journal-dir (concat zf/pkm-file-path "/journal/")
+  (setq org-journal-dir (concat zf/pkm-file-path "/pkm/journal/")
         org-journal-file-header zf/daily-note-template
         org-journal-carryover-items ""
         org-journal-find-file-fn 'find-file
@@ -835,10 +900,13 @@ daily notes
                     :select '(let* ((heading (org-get-heading t t t t))
                                     (state (org-get-todo-state))
                                     (raw-body (org-get-entry))
+                                    (clean-subheadings (if (string-match "\n\\*+ " raw-body)
+                                                           (substring raw-body 0 (match-beginning 0))
+                                                         raw-body))
                                     (body (replace-regexp-in-string
                                            "^[ \t]*:\\(LOGBOOK\\|PROPERTIES\\):\\(?:\n\\|.\\)*?\\(?:\n[ \t]*:END:\\)\n?"
                                            ""
-                                           raw-body))
+                                           clean-subheadings))
                                     (tags-str (if (org-get-tags) (mapconcat 'identity (org-get-tags) ":") ""))
                                     (breadcrumbs-str (mapconcat 'identity (org-get-outline-path) ">"))
                                     (filename (file-name-nondirectory (buffer-file-name))))
@@ -857,6 +925,7 @@ daily notes
 (zf/leader
   "oj" '(:ignore t :wk "journal")
   "ojl" '(zf/todo-journal-logbook :wk "source logbook")
+  "ojn" '(org-journal-new-date-entry :wk "open new entry")
   "ojd" '(org-journal-open-current-journal-file :wk "open today"))
 #+end_src
 
@@ -871,22 +940,31 @@ daily notes
     org-journal-file))
 
 (setq org-capture-templates
-      `(("j" "Journal Catchment" item
+      `(("j" "Journal Entry" item
          (file+headline zf/todays-journal-file "Catchment")
          "%?" :kill-buffer t)
-        ("d" "Dream Journal" plain
-         (file+headline zf/todays-journal-file "Dream Journal")
+        ("d" "Dream Journal Entry" plain
+         (file+headline zf/todays-journal-file "Dream")
          "%?" :kill-buffer t)
-        ("a" "Agenda Scratchpad" entry
+        ("t" "TODO" entry
          (file+headline zf/todays-journal-file "Agenda Scratchpad")
          "* TODO  %?" :kill-buffer t)
-        ("n" "Nutritional Info" table-line
-         (file+headline ,(expand-file-name "agenda/datalog.org" org-directory) "NUTRITION")
+        ("p" "Logbook Entry" item
+         (file+headline zf/todays-journal-file "Entries")
+         "- %<%H:%M> |  %?" :kill-buffer t)
+
+        ("n" "Nutrition" table-line
+         (file+headline ,(expand-file-name "pkm/agenda/datalog.org" org-directory) "NUTRITION")
          "| %<%Y-%m-%d> | %^{Calories} | %^{Carbs} | %^{Protein} | %^{Fat} |" :kill-buffer t)
-        ("m" "Morning Data" table-line
-         (file+headline ,(expand-file-name "agenda/datalog.org" org-directory) "Health Markers")
-         "| %<%Y-%m-%d> | %^{Weight} | %^{Wake Up Time} | %^{Hours Slept} |" :kill-buffer t)
-        ))
+        ("b" "Body Stat" table-line
+         (file+headline ,(expand-file-name "pkm/agenda/datalog.org" org-directory) "BODY STAT")
+         "| %<%Y-%m-%d> | %^{Waist} | %^{Bicep} | %^{Quad} | %^{Chest} | %^{Shoulder} |" :kill-buffer t)
+        ("s" "Sleep" table-line
+         (file+headline ,(expand-file-name "pkm/agenda/datalog.org" org-directory) "SLEEP")
+         "| %<%Y-%m-%d> | %^{Wake Up Time} | %^{Hours Slept} |" :kill-buffer t)
+        ("w" "Weight" table-line
+         (file+headline ,(expand-file-name "pkm/agenda/datalog.org" org-directory) "WEIGHT")
+         "| %<%Y-%m-%d> | %^{Weight} |" :kill-buffer t)))
 
 (add-hook 'org-capture-mode-hook 'evil-insert-state)
 
@@ -961,9 +1039,9 @@ daily notes
   "Generate and display a ForceAtlas2 graph."
   (interactive)
   (let* ((buf (get-buffer-create "*graph-view*"))
-         (files (directory-files-recursively zf/academic-notes-path "\\.md\\'"))
+         (files (directory-files-recursively (concat zf/curr-academic-path "/..") "\\.md\\'"))
          (file-ids (mapcar (lambda (file)
-                             (replace-regexp-in-string (regexp-quote zf/academic-notes-path) "" file t t))
+                             (replace-regexp-in-string (regexp-quote zf/curr-academic-path) "" file t t))
                            files))
 
          (id-base-table (let ((table (make-hash-table :test 'equal)))
@@ -1003,6 +1081,104 @@ daily notes
 #+end_src
 
 ** Timeblocking
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+(unless (package-installed-p 'org-timeblock)
+  (package-vc-install "https://github.com/cmrcrabs/org-timeblock"))
+
+(defface routine-face
+  '((t :background "#141414")) "X.")
+(defface commute-face
+  '((t :background "#212121")) "X.")
+
+(defface kb-face
+  '((t :background "#711111")) "X.")
+(defface gs-face
+  '((t :background "#711113")) "X.")
+
+(defface health-face
+  '((t :background "#115111")) "X.")
+(defface creative-face
+  '((t :background "#611151")) "X.")
+(defface learning-face
+  '((t :background "#113111")) "X.")
+
+
+(defface chore-face
+  '((t :background "#211121")) "X.")
+(defface habit-face
+  '((t :background "#251111")) "X.")
+(defface fallback-face
+  '((t :background "#FF0000")) "X.")
+
+
+(setq org-timeblock-span 1
+      org-timeblock-inbox-file (concat zf/pkm-file-path "/pkm/agenda/inbox.org")
+      org-timeblock-new-task-time 'pick
+      org-timeblock-scale-options nil
+      org-timeblock-show-future-repeats t
+      org-timeblock-tag-colors
+      '(("ROUTINE" . routine-face)
+        ("COMMUTE" . commute-face)
+
+        ("CREATIVE" . creative-face)
+
+        ("@kings_buildings" . kb-face)
+        ("@st_leonards" . gs-face)
+        ("@george_square" . gs-face)
+
+        ("HEALTH" . health-face)
+        ("SPORT" . health-face)
+        ("LEARNING" . learning-face)
+
+        ("HABIT" . habit-face)
+        ("CHORE" . chore-face)
+        ("" . fallback-face)))
+
+;;(defun zf/refresh-cal ()
+;;  "Reload ~org-timeblock~ calendar."
+;;  (interactive)
+;;  (when (equals (buffer-name) "*org-timeblock*")
+;;    (kill-current-buffer)
+;;    (mapatoms (lambda (symbol)
+;;                (if (string-prefix-p "org-timeblock-" (symbol-name symbol))
+;;                    (makunbound symbol))))
+;;    (zf/set-timeblock-settings)
+;;    (org-timeblock)))
+
+(evil-define-key 'normal org-timeblock-mode-map
+  "j" 'org-timeblock-forward-block
+  "l" 'org-timeblock-forward-column
+  "h" 'org-timeblock-backward-column
+  "L" 'org-timeblock-day-later
+  "H" 'org-timeblock-day-earlier
+  "k" 'org-timeblock-backward-block
+
+  "s" 'org-timeblock-schedule
+  "u" 'org-timeblock-todo
+  "n" 'org-timeblock-new-task
+  "q" 'kill-current-buffer
+  (kbd "RET") 'org-timeblock-goto
+  (kbd "TAB") 'org-timeblock-goto-other-window)
+
+(zf/leader
+  "oc" '(:ignore t :wk "calendar")
+  "ocw" '((lambda ()
+            (interactive)
+            (setq org-timeblock-span 7)
+            (org-timeblock))
+          :wk "open week")
+  "ocd" '((lambda ()
+            (interactive)
+            (setq org-timeblock-span 1)
+            (org-timeblock))
+          :wk "open day")
+  "oc3" '((lambda ()
+            (interactive)
+            (setq org-timeblock-span 3)
+            (org-timeblock))
+          :wk "open 3 day"))
+
+#+end_src
 ** Academia
 *** Latex + Pdf + md :UNFINISHED:PHONE_DISABLED:
 yasnippets, also add typst
@@ -1066,11 +1242,11 @@ FUTURE: keybinds, color formats
         evil-normal-state-cursor  '("#ee6a50" box)
         evil-insert-state-cursor  '("#ee6a50" (bar . 2))
         evil-visual-state-cursor  '("#ee6a50" hbar)
-        evil-motion-state-cursor  '("#ee6a50" box)
+        evil-motion-state-cursor  '("#ee6a50" box) 
         evil-emacs-state-cursor   '("#ee6a50" box))
   (doom-themes-org-config))
 
-(load-theme 'doom-molokai t)
+(load-theme 'doom-sourcerer t)
 ;;(load-theme 'doom-solarized-light t)
 
 ;;(use-package rainbow-mode
@@ -1183,6 +1359,91 @@ FUTURE: keybinds, color formats
   :demand t
   :init (global-hl-todo-mode))
 
+(use-package spacious-padding
+  :config
+  (setq spacious-padding-widths
+        '( :internal-border-width 15
+           :header-line-width 0
+           :mode-line-width 0
+
+           :scroll-bar-width 0
+           :custom-button-width 0
+           :tab-width 0
+           :right-divider-width 0
+           :fringe-width 0))
+  (spacious-padding-mode 1))
+
 #+end_src
 
+* Utilities
+** tst-org-sync
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
 
+(use-package simple-httpd
+  :config (httpd-start))
+
+(httpd-servlet tst-org-sync/read-file text/plain ()
+  (insert-file-contents zf/tabs-file-path))
+
+(httpd-servlet tst-org-sync/read-timestamp text/plain ()
+  (let* ((modification-time (file-attribute-modification-time (file-attributes zf/tabs-file-path)))
+         (modification-string (substring (format "%s" modification-time) 1 -1)))
+    (insert modification-string)))
+
+(defun httpd/tst-org-sync/write (proc path &rest args)
+  "PROC PATH ARGS."
+  (let* ((body (cdr (car (last (cdr (car (last args)))))))
+         (body-string (substring (format "%s" body) 1 -1)))
+    (with-temp-file zf/tabs-file-path
+      (insert body-string))
+    (with-httpd-buffer proc
+      (insert "...File Write Success"))))
+
+#+end_src
+
+** pomodoro timer
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+(setq zf/pomo-number 0)
+(setq org-show-notification-handler #'ignore)
+
+(defun zf/start-pomo-work ()
+  "Start pomodoro work timer."
+  (interactive)
+  (setq zf/pomo-number (+ zf/pomo-number 1))
+  (let ((str (format "pomodoro %1$s: " zf/pomo-number)))
+    (setq org-timer-format (concat str "%s  "))
+    (message "%s" (concat str "started"))
+    (org-timer-set-timer "0:25:00")
+    (setq org-timer-done-hook nil)
+    (add-hook 'org-timer-done-hook (lambda ()
+                                     (message "%s" (concat str "ended"))
+                                     (org-capture nil "p")
+                                     (ding)))))
+
+
+(defun zf/start-pomo-break ()
+  "Start pomodoro break timer, cycling long breaks."
+  (interactive)
+  (let ((str (format "break %1$s: " zf/pomo-number)))
+    (if (= (% zf/pomo-number 4) 0)
+        (progn
+          (setq org-timer-format (concat "long " str "%s  "))
+          (org-timer-set-timer "0:10:00"))
+      (progn
+        (setq org-timer-format (concat str "%s  "))
+        (org-timer-set-timer "0:05:00")))
+
+    (message "%s" (concat str "started"))
+    (setq org-timer-done-hook nil)
+    (add-hook 'org-timer-done-hook (lambda ()
+                                     (message "%s" (concat str "ended"))
+                                     (ding)))))
+
+(zf/leader
+  "op" '(:ignore t :wk "pomodoro")
+  "opw" '(zf/start-pomo-work :wk "start work timer")
+  "opp" '(org-timer-pause-or-continue :wk "pause/continue")
+  "ops" '(org-timer-stop :wk "stop")
+  "opb" '(zf/start-pomo-break :wk "start break timer"))
+
+#+end_src
